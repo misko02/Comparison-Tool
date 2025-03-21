@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import './App.css';
 
 
@@ -6,7 +6,7 @@ function App() {
 
   const [data, setData] = useState([{}])
 
-useEffect(() =>{
+const fetchTimeSeries = async () =>{
   fetch("/timeseries").then(
     res => res.json()
   ).then(
@@ -15,7 +15,8 @@ useEffect(() =>{
       console.log(data.timeseries)
     }
   )
-}, [])
+}
+
 
   return (
     <div className="App">
@@ -30,12 +31,21 @@ useEffect(() =>{
         >
           Check repository
         </a>
+          <button type = "button" onClick={fetchTimeSeries}>Download data</button>
         <p>
+        {data.length > 1 && <table>
+          <tr>
+            <th> index </th>
+            <th> date </th>  
+          </tr>  
           {data.map((item, index) => (
-            <div key={index}>
-              <p>{String(item)}</p>
-            </div>
+            <tr>
+              <td> {index} </td>
+              <td> {String(item)} </td>
+            </tr>
           ))}
+        </table>
+      } 
         </p>
       </header>
     </div>
