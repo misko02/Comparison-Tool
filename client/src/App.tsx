@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import './App.css';
-
-
+import { FaChartLine, FaHome} from "react-icons/fa";
 function App() {
 
   const [data, setData] = useState([{}])
@@ -21,6 +20,21 @@ const fetchTimeSeries = async () =>{
   return (
     <div className="App">
       <header className="App-header">
+
+      <nav className='App-nav'>
+        <ul>
+          <li>
+            <a href="/"><FaHome /></a>
+          </li>
+          <li>
+            <a href="/comparison"><FaChartLine /></a>
+          </li>
+          <li>
+            {/*change it later, for now I had problem with icon libraries*/}
+            <a href="/settings">⚙</a>
+          </li>
+        </ul>
+      </nav>
         <h1> Template for Comparison Tool</h1> 
  
         <a

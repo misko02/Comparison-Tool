@@ -1,3 +1,7 @@
+body{
+  margin: 0;
+}
+
 .App {
   text-align: center;
 }
@@ -22,6 +26,34 @@
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+}
+
+.App-nav {
+  position: absolute;
+  flex-direction: column;
+  left: 0;
+  background-color: grey;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  width: 5%;
+}
+.App-nav a {
+  color: black;
+  text-decoration: none;
+  background-color: white;
+  padding: 10px;
+  border-radius: 20%;
+}
+
+.App-nav ul {
+  padding: 0;
+  margin: 50% 0;
+}
+
+.App-nav ul>li {
+  list-style: none;
+  margin-bottom: 100%;
 }
 
 .App-link {
