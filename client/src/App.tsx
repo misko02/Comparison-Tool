@@ -1,17 +1,19 @@
 import { useState } from 'react';
 import './App.css';
-import { FaChartLine, FaHome} from "react-icons/fa";
+
 function App() {
+
 
   const [data, setData] = useState([{}])
 
 const fetchTimeSeries = async () =>{
   fetch("/timeseries").then(
     res => res.json()
+
   ).then(
     data => {
-      setData(data.timeseries)
-      console.log(data.timeseries)
+      setData(data)
+      console.log(data)
     }
   )
 }
@@ -24,10 +26,10 @@ const fetchTimeSeries = async () =>{
       <nav className='App-nav'>
         <ul>
           <li>
-            <a href="/"><FaHome /></a>
+            <a href="/">test </a>
           </li>
           <li>
-            <a href="/comparison"><FaChartLine /></a>
+            <a href="/comparison">test</a>
           </li>
           <li>
             {/*change it later, for now I had problem with icon libraries*/}

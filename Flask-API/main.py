@@ -4,7 +4,7 @@ app = Flask(__name__)
 
 timeseries = [datetime.datetime(2020, 5, 20).strftime('%Y-%m-%d %H:%M:%S'), datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')]
 
-@app.route("/timeseries")
+@app.route("/timeseries", methods=["GET"])
 def get_timeseries():
     return jsonify(timeseries)
 
