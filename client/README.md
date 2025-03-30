@@ -1,4 +1,6 @@
-# File structure
+# This is documentation of Flask API for Comparison Tool Aplication
+
+## File structure
 
 ```
 |- public – assets to use in aplications, icons, images
@@ -14,8 +16,8 @@
 ```
 
 ## Running application
-` npm start `
-### Authors 
+to run app type ` npm start ` in terminal.
+## Authors 
 - Michał Bojara
 - Mikołaj Szulc 
 - Franciszka Jędraszak
