@@ -14,4 +14,4 @@ def add_timeserie():
     return jsonify(timeseries)
 
 if __name__ == "__main__":
-    app.run(debug="run")
+    app.run(debug="run", host="0.0.0.0", port=5000)
