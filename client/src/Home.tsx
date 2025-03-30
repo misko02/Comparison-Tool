@@ -9,15 +9,14 @@ import {
   Button,
   Card,
   CardContent,
+  GlobalStyles,
   Grid,
   Paper,
   Stack,
   Theme,
   Typography,
 } from "@mui/material";
-import React from "react";
 
-// TODO : Add images
 import vector2 from './assets/Vector 2.svg';
 import vector4 from './assets/Vector 4.svg';
 import vector5 from './assets/Vector 5.svg';
@@ -25,13 +24,43 @@ import vector6 from './assets/Vector 6.svg';
 import vector23 from './assets/Vector 23.svg';
 import vector24 from './assets/Vector 24.svg';
 import vector25 from './assets/Vector 25.svg';
+import { useState } from "react";
 
 
 const HomeScreen = () => {
+    // Oryginał
+    // const [data, setData] = useState([{}])
+
+    // const fetchTimeSeries = async () =>{
+    //   fetch("/timeseries").then(
+    //     res => res.json()
+
+    //   ).then(
+    //     data => {
+    //       setData(data)
+    //       console.log(data)
+    //     }
+    //   )
+    // }
+    
+    // Nowe
+    const [data, setData] = useState<any[]>([])
+
+    const fetchTimeSeries = async () => {
+        try {
+            const response = await fetch("/timeseries");
+            const result = await response.json();
+            setData(result);
+            console.log("Pobrane dane:", result);
+        } catch (error) {
+            console.error("Błąd pobierania danych:", error);
+        }
+    }
+
   // Data for metric cards
   const metricCards = [
-    { id: 1, title: "Jakaś miara", value: "2 137" },
-    { id: 2, title: "Jakaś miara", value: "2 137" },
+    { id: 1, title: "Jakaś miara", value: "1 234" },
+    { id: 2, title: "Jakaś miara", value: "5 678" },
     { id: 3, title: "Jakaś miara", value: "2 137" },
   ];
 
@@ -49,8 +78,26 @@ const HomeScreen = () => {
   const yAxisLabels = [60, 20, -20, -60];
 
   return (
+    <>
+      {/* Globalne style - usunięcie marginesów */}
+      <GlobalStyles
+        styles={{
+          "html, body": {
+            margin: 0,
+            padding: 0,
+            height: "100%",
+            width: "100%",
+          },
+        }}
+      />
+      
     <Box
-      sx={{ position: "relative", height: "100vh", bgcolor: "common.white" }}
+      sx={{ 
+        position: "relative",
+        width: "100vw",
+        height: "100vh",
+        bgcolor: "common.white",
+        }}
     >
       {/* Sidebar */}
       <Box
@@ -130,7 +177,7 @@ const HomeScreen = () => {
           <Paper
             sx={{
               width: 350,
-              height: 80,
+              height: 40,
               borderRadius: "25px",
               border: "1px solid black",
               display: "flex",
@@ -159,7 +206,9 @@ const HomeScreen = () => {
               borderRadius: 2,
               fontFamily: "Inter-Bold, Helvetica",
               fontWeight: 700,
+              
             }}
+            onClick={fetchTimeSeries}
           >
             Wczytaj dane
           </Button>
@@ -399,6 +448,7 @@ const HomeScreen = () => {
         </Card>
       </Box>
     </Box>
+    </>
   );
 };
 
