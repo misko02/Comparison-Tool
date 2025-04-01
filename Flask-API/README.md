@@ -12,9 +12,16 @@
 | main.py – main file of program
 ```
 ## Running Aplication
-`python3 main.py`
+You can run backend of application by simply typing `python3 main.py` in the terminal.
 
-### Authors
+## Endpoints
+### GET:
+    /timeseries - Get all avaible timeseries
+
+### POST:
+    /timeseries - Post new timeseries to list
+
+## Authors
 - Michał Bojara 
 - Mikołaj Szulc
 - Franciszka Jędraszak
