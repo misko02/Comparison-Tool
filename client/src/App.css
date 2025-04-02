@@ -23,7 +23,6 @@ body{
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
 }
@@ -37,6 +36,18 @@ body{
   align-items: center;
   height: 100%;
   width: 5%;
+}
+.App-measure {
+  display: flex;
+  flex-direction: row;
+}
+
+.App-measure p{
+  padding-left: 20px;
+  padding: 10px;
+  background-color: lightgray;
+  color: black;
+
 }
 .App-nav a {
   color: black;
@@ -66,6 +77,8 @@ button{
   margin: 10px;
   cursor: pointer;
 }
+
+
 
 @keyframes App-logo-spin {
   from {
