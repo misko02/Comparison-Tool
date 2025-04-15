@@ -6,10 +6,12 @@ services:
     ports:
      - "5000:5000"
     environment:
-      - API_ENV=production
+      - FLASK_APP=main.py
+      - FLASK_ENV=development
     networks:
       - comparison-tool-network
-
+    volumes:
+      - ./Flask-API:/app
   frontend:
     build: ./client
     ports:
@@ -21,6 +23,9 @@ services:
       - REACT_APP_API_URL=http://backend:5000/  
     networks:
       - comparison-tool-network
+    volumes:
+      - ./client:/app
+      - /app/node_modules
 networks:
   comparison-tool-network:
    driver: bridge
