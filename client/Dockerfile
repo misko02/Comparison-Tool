@@ -1,6 +1,7 @@
 FROM node:18-alpine
-WORKDIR /client
+WORKDIR /app
 COPY package.json package-lock.json ./
+RUN npm install
 COPY . .
 EXPOSE 3000
-CMD npm install ; npm run build ; npm start
+CMD ["npm", "start"]

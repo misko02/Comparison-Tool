@@ -1,6 +1,8 @@
 import {useState} from 'react';
 import './App.css';
-import {LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Brush} from "recharts";
+import {LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Brush, Legend} from "recharts";
+import Plot from 'react-plotly.js';
+
 
 function App() {
 
@@ -20,7 +22,7 @@ function App() {
                     log_date: string;
                     value: number
                 }, index: number) => ({
-                    x: new Date(item.log_date).toLocaleTimeString(),
+                    x: item.log_date,
                     y1: item.value, // Pierwszy szereg
                     y2: data.timeseries2[index] ? data.timeseries2[index].value : null // Drugi szereg (jeśli istnieje)
                 }));
@@ -70,17 +72,58 @@ function App() {
                 </div>
                 <button type="button" onClick={fetchTimeSeries}>Download data</button>
                 {data.length > 0 && (
-                    <ResponsiveContainer width="90%" height={300}>
-                        <LineChart data={data} margin={{top: 10, right: 30, left: 0, bottom: 10}}>
-                            <XAxis dataKey="x"/>
-                            <YAxis domain={[0, 100]}/>
-                            <Tooltip/>
-                            <Line type="monotone" dataKey="y1" stroke="#8884d8" dot={false} name="Timeseries 1"/>
-                            <Line type="monotone" dataKey="y2" stroke="#82ca9d" dot={false} name="Timeseries 2"/>
-                            <Brush dataKey="x" height={30} stroke="#8884d8"/>
-                        </LineChart>
-                    </ResponsiveContainer>
+                    <Plot
+                        data={[
+                            {
+                                x: data.map(d => d.x),
+                                y: data.map(d => d.y1),
+                                type: 'scatter',
+                                mode: 'lines',
+                                name: 'Timeseries 1',
+                                line: {color: '#8884d8'},
+                                customdata: data.map(d => d.y2),
+                                hovertemplate: '%{x|%Y-%m-%d %H:%M:%S}<br>Value: %{y}</br>Timeseries 2: %{customdata}<extra></extra>'
+                            },
+                            {
+                                x: data.map(d => d.x),
+                                y: data.map(d => d.y2),
+                                type: 'scatter',
+                                mode: 'lines',
+                                name: 'Timeseries 2',
+                                line: {color: '#82ca9d'},
+                                hovertemplate: '%{x|%Y-%m-%d %H:%M:%S}<br>Value: %{y}<extra></extra>'
+                            }
+                        ]}
+                        layout={{
+                            title: 'Time Series Comparison',
+                            xaxis: {title: 'Time', type: 'date', tickformat: '%d.%m.%Y', dtick: "d1", fixedrange: false, showspikes: true, spikemode: 'across', spikesnap: "cursor", spikedash: "solid", spikethickness: 1},
+                            yaxis: {title: 'Value', range: [0, 100], fixedrange: true, showspikes: true, spikemode: 'across', spikedash: "solid", spikethickness: 1},
+                            height: 600,
+                            autosize: true,
+                            legend: {orientation: "h"},
+                            paper_bgcolor: 'white',
+                            plot_bgcolor: 'white'
+                        }}
+
+                        useResizeHandler={true}
+                        style={{width: '80%', height: '100%', backgroundColor : 'red'}}
+                        config={{responsive: true}}
+                    />
                 )}
+                {/*{data.length > 0 && (*/}
+                {/*    <ResponsiveContainer width="90%" height={300}>*/}
+                {/*        <LineChart data={data} margin={{top: 10, right: 30, left: 0, bottom: 10}}>*/}
+                {/*            <XAxis dataKey="x"/>*/}
+                {/*            <XAxis scale="utc"/>*/}
+                {/*            <YAxis domain={[0, 100]}/>*/}
+                {/*            <Tooltip/>*/}
+                {/*            <Legend />*/}
+                {/*            <Line type="monotone" dataKey="y1" stroke="#8884d8" dot={false} name="Timeseries 1"/>*/}
+                {/*            <Line type="monotone" dataKey="y2" stroke="#82ca9d" dot={false} name="Timeseries 2"/>*/}
+                {/*            <Brush dataKey="x" height={30} stroke="#8884d8"/>*/}
+                {/*        </LineChart>*/}
+                {/*    </ResponsiveContainer>*/}
+                {/*)}*/}
                 <a
                     className="App-link"
                     href="https://github.com/misko02/Comparison-Tool"
