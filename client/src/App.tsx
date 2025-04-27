@@ -11,6 +11,58 @@ function App() {
         y1: number;
         y2: number;
     };
+
+const MyChart = ({ data }: { data: TimeSeriesEntry[] }) => {
+
+    return (
+        data.length > 0 && (
+            <Plot
+                data={[
+                    {
+                        x: data.map(d => d.x),
+                        y: data.map(d => d.y1),
+                        type: 'scatter',
+                        mode: 'lines',
+                        name: 'Timeseries 1',
+                        line: {color: '#8884d8'},
+                    },
+                ]}
+                layout={{
+                    title: 'Time Series Comparison',
+                    xaxis: {
+                        title: 'Time',
+                        type: 'date',
+                        tickformat: '%d.%m.%Y', // Wyświetlanie daty i godziny
+                        fixedrange: false,
+                        showspikes: true,
+                        spikemode: 'across',
+                        spikesnap: "cursor",
+                        spikedash: "solid",
+                        spikethickness: 1
+                    },
+                    yaxis: {
+                        title: 'Value',
+                        range: [0, 100],
+                        fixedrange: true,
+                        showspikes: true,
+                        spikemode: 'across',
+                        spikedash: "solid",
+                        spikethickness: 1
+                    },
+                    height: 600,
+                    autosize: true,
+                    legend: {orientation: "h"},
+                    paper_bgcolor: 'white',
+                    plot_bgcolor: 'white'
+                }}
+                useResizeHandler={true}
+                style={{width: '80%', height: '100%', backgroundColor: 'red'}}
+                config={{responsive: true}}
+            />
+        )
+    );
+};
+
     const uploadTimeSeries = async (event: React.ChangeEvent<HTMLInputElement>) => {
 
         const file = event.target.files?.[0];
@@ -42,12 +94,15 @@ function App() {
 
     const [data, setData] = useState<TimeSeriesEntry[]>([]);
     const fetchTimeSeries = async () => {
-
+        try {
+            const response = await fetch("/timeseries");
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
             }
             const data = await response.json();
 
             const formattedData = data.timeseries1.map((item: { log_date: string; value: number }, index: number) => ({
-                x: new Date(item.log_date).toLocaleTimeString(),
+                x: item.log_date,
                 y1: item.value
                 // y2: data.timeseries2[index] ? data.timeseries2[index].value : null
             }));
@@ -58,6 +113,38 @@ function App() {
             console.error("Failed to fetch data:", error);
         }
     }
+    // const fetchTimeSeries = async () => {
+    //     fetch("/timeseries").then(
+    //         res => res.json()
+    //     ).then(
+    //         data => {
+    //             const formattedData = data.timeseries1.map((item: {
+    //                 log_date: string;
+    //                 value: number
+    //             }, index: number) => ({
+    //                 x: item.log_date,
+    //                 y1: item.value, // Pierwszy szereg
+    //                 y2: data.timeseries2[index] ? data.timeseries2[index].value : null // Drugi szereg (jeśli istnieje)
+    //             }));
+    //             setData(formattedData);
+    //             console.log(data)
+    //         }
+    //     )
+    // }
+    //         const data = await response.json();
+    //
+    //         const formattedData = data.timeseries1.map((item: { log_date: string; value: number }, index: number) => ({
+    //             x: new Date(item.log_date).toLocaleTimeString(),
+    //             y1: item.value
+    //             // y2: data.timeseries2[index] ? data.timeseries2[index].value : null
+    //         }));
+    //
+    //         setData(formattedData);
+    //         console.log(data);
+    //     } catch (error) {
+    //         console.error("Failed to fetch data:", error);
+    //     }
+    // }
 
 
     const calculateAverageDifference = () => {
@@ -100,46 +187,10 @@ function App() {
                 </div>
                 <button type="button" onClick={fetchTimeSeries}>Visualize data</button>
                 <input type="file" accept=".json"  onChange={uploadTimeSeries} />
+                <div className="Chart">
+                    {MyChart({data})}
+                </div>
 
-                {data.length > 0 && (
-                    <Plot
-                        data={[
-                            {
-                                x: data.map(d => d.x),
-                                y: data.map(d => d.y1),
-                                type: 'scatter',
-                                mode: 'lines',
-                                name: 'Timeseries 1',
-                                line: {color: '#8884d8'},
-                                customdata: data.map(d => d.y2),
-                                hovertemplate: '%{x|%Y-%m-%d %H:%M:%S}<br>Value: %{y}</br>Timeseries 2: %{customdata}<extra></extra>'
-                            },
-                            {
-                                x: data.map(d => d.x),
-                                y: data.map(d => d.y2),
-                                type: 'scatter',
-                                mode: 'lines',
-                                name: 'Timeseries 2',
-                                line: {color: '#82ca9d'},
-                                hovertemplate: '%{x|%Y-%m-%d %H:%M:%S}<br>Value: %{y}<extra></extra>'
-                            }
-                        ]}
-                        layout={{
-                            title: 'Time Series Comparison',
-                            xaxis: {title: 'Time', type: 'date', tickformat: '%d.%m.%Y', dtick: "d1", fixedrange: false, showspikes: true, spikemode: 'across', spikesnap: "cursor", spikedash: "solid", spikethickness: 1},
-                            yaxis: {title: 'Value', range: [0, 100], fixedrange: true, showspikes: true, spikemode: 'across', spikedash: "solid", spikethickness: 1},
-                            height: 600,
-                            autosize: true,
-                            legend: {orientation: "h"},
-                            paper_bgcolor: 'white',
-                            plot_bgcolor: 'white'
-                        }}
-
-                        useResizeHandler={true}
-                        style={{width: '80%', height: '100%', backgroundColor : 'red'}}
-                        config={{responsive: true}}
-                    />
-                )}
                 {/*{data.length > 0 && (*/}
                 {/*    <ResponsiveContainer width="90%" height={300}>*/}
                 {/*        <LineChart data={data} margin={{top: 10, right: 30, left: 0, bottom: 10}}>*/}
