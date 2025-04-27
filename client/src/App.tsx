@@ -11,26 +11,54 @@ function App() {
         y1: number;
         y2: number;
     };
+    const uploadTimeSeries = async (event: React.ChangeEvent<HTMLInputElement>) => {
+
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const content = e.target?.result as string;
+                const jsonData = JSON.parse(content);
+
+                const response = await fetch("/upload-timeseries", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(jsonData)
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to upload timeseries");
+                }
+                const result = await response.json();
+                console.log("Upload successful:", result);
+            } catch (error) {
+                console.error("Error uploading file:", error);
+            }
+            };
+        reader.readAsText(file);
+        };
 
     const [data, setData] = useState<TimeSeriesEntry[]>([]);
     const fetchTimeSeries = async () => {
-        fetch("/timeseries").then(
-            res => res.json()
-        ).then(
-            data => {
-                const formattedData = data.timeseries1.map((item: {
-                    log_date: string;
-                    value: number
-                }, index: number) => ({
-                    x: item.log_date,
-                    y1: item.value, // Pierwszy szereg
-                    y2: data.timeseries2[index] ? data.timeseries2[index].value : null // Drugi szereg (jeśli istnieje)
-                }));
-                setData(formattedData);
-                console.log(data)
+
             }
-        )
+            const data = await response.json();
+
+            const formattedData = data.timeseries1.map((item: { log_date: string; value: number }, index: number) => ({
+                x: new Date(item.log_date).toLocaleTimeString(),
+                y1: item.value
+                // y2: data.timeseries2[index] ? data.timeseries2[index].value : null
+            }));
+
+            setData(formattedData);
+            console.log(data);
+        } catch (error) {
+            console.error("Failed to fetch data:", error);
+        }
     }
+
 
     const calculateAverageDifference = () => {
         const diffs = data.map(d => Math.abs(d.y1 - d.y2));
@@ -70,7 +98,9 @@ function App() {
                     <p>Max difference: {calculateMaxDifference()}</p>
                     <p>Min difference: {calculateMinDifference()}</p>
                 </div>
-                <button type="button" onClick={fetchTimeSeries}>Download data</button>
+                <button type="button" onClick={fetchTimeSeries}>Visualize data</button>
+                <input type="file" accept=".json"  onChange={uploadTimeSeries} />
+
                 {data.length > 0 && (
                     <Plot
                         data={[
