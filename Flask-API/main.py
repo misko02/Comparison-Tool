@@ -37,7 +37,6 @@ app = Flask(__name__)
 # with open('data.json', 'r') as timeseries2:
 #     timeseries2 = json.load(timeseries2)
 
-
 @app.route("/timeseries", methods=["GET"])
 def get_timeseries():
     timeseries_data = timeseries_manager.get_timeseries()
