@@ -5,10 +5,14 @@ import sys
 from flask import Flask, jsonify, request
 import datetime
 
+sys.stdout.reconfigure(line_buffering=True)
 
 app = Flask(__name__)
 
 timeseries = []
+
+
+
 # timeseries = [datetime.datetime(2020, 5, 20).strftime('%Y-%m-%d %H:%M:%S'), datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')]
 # with open('data_model2.json', 'r') as timeseries:
 #     timeseries = json.load(timeseries)
@@ -29,7 +33,6 @@ def get_timeseries():
 def add_timeseries():
     global timeseries
     data = request.get_json()
-
     if not data:
         return jsonify({"error": "Invalid request"}), 400
 

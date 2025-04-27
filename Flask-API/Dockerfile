@@ -5,7 +5,7 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Copy the requirements file into the container at /app
-COPY requirements.txt data.json data_model2.json ./main.py ./
+COPY requirements.txt ./main.py ./
 
 # Install any dependencies
 RUN pip install --no-cache-dir -r requirements.txt
