@@ -8,15 +8,17 @@ import datetime
 
 class TimeSeriesManager:
     def __init__(self):
-        self.timeseries = []
+        self.timeseries = {}
 
-    def add_timeseries(self, data):
+    def add_timeseries(self, key, data):
         if isinstance(data, list):
-            self.timeseries.extend(data)
-            return data
-        return None
+            self.timeseries[key] = data
+            return True
+        return False
 
-    def get_timeseries(self):
+    def get_timeseries(self, key=None):
+        if key:
+            return self.timeseries.get(key)
         return self.timeseries
 
     def clear_timeseries(self):
@@ -39,28 +41,27 @@ app = Flask(__name__)
 
 @app.route("/timeseries", methods=["GET"])
 def get_timeseries():
-    timeseries_data = timeseries_manager.get_timeseries()
-    return jsonify({"timeseries1": timeseries_data}), 201
-
-# , "timeseries2": timeseries2
+    key = request.args.get("key")
+    data = timeseries_manager.get_timeseries(key)
+    if data is None:
+        return jsonify({"error": "Key not found"}), 404
+    return jsonify(data), 200
 
 @app.route("/upload-timeseries", methods=["POST"])
 def add_timeseries():
     data = request.get_json()
-    if not data:
-        return jsonify({"error": "Invalid request"}), 400
+
+    if not isinstance(data, dict):
+        return jsonify({"error": "Expected a JSON object with keys as identifiers"}), 400
+
     timeseries_manager.clear_timeseries()
-    added_data = timeseries_manager.add_timeseries(data)
 
+    for key, timeseries_list in data.items():
+        if not isinstance(timeseries_list, list):
+            return jsonify({"error": f"Invalid data format for key '{key}'"}), 400
+        timeseries_manager.add_timeseries(key, timeseries_list)
 
-    if isinstance(data, list):
-        added_data.extend(data)
-    return jsonify(added_data), 201
-    #
-    #     return jsonify({
-    #         "error": "Invalid data format",
-    #         "expected": "Array of entries or object with 'log_date' field"
-    #     }), 400
+    return jsonify({"status": "Data uploaded", "files": list(data.keys())}), 201
 
 
 

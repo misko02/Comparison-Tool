@@ -6,18 +6,17 @@ import { MyChart } from './components/Chart/Chart';
 import { fetchTimeSeriesData, TimeSeriesEntry } from './services/fetchTimeSeries';
 
 function App() {
-    const [chartData, setChartData] = useState<TimeSeriesEntry[]>([]);
+    const [chartData, setChartData] = useState<Record<string, TimeSeriesEntry[]>>({});
     const [error, setError] = useState<string | null>(null);
 
     // Funkcja do pobierania danych
     const handleFetchData = useCallback(async (showLoadingDuringFetch = true) => {
         setError(null);
         try {
-            const data = await fetchTimeSeriesData();
-            setChartData(data);
+            const allSeries = await fetchTimeSeriesData();
+            setChartData(allSeries);
         } catch (err: any) {
             setError(err.message || 'Failed to fetch data.');
-            setChartData([]); // Wyczyść dane w przypadku błędu
         }
     }, []);
 
@@ -57,9 +56,10 @@ function App() {
 
                 {error && <p className="App-error" style={{color: 'red', textAlign: 'center'}}>Error: {error}</p>}
 
+
                 <div className="Chart-container">
-                    {chartData.length === 0 && <p style={{textAlign: 'center', padding: '30px'}}>Upload data to visualize</p>}
-                    {chartData.length > 0 && <MyChart data={chartData} title="Time Series Analysis" />}
+                    {Object.keys(chartData).length  === 0 && <p style={{textAlign: 'center', padding: '30px'}}>Upload data to visualize</p>}
+                    {Object.keys(chartData).length > 0 && <MyChart data={chartData} title="Time Series Analysis" />}
                 </div>
 
 
