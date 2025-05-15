@@ -8,11 +8,11 @@ import PluginsPage from './pages/PluginsPage';
 import RaportPage from './pages/RaportPage';
 import SettingsPage from './pages/SettingsPage';
 import HelpPage from './pages/HelpPage';
-import './NavPage.css';
+import './App.css';
 
-const NavPage: React.FC = () => {
+const App: React.FC = () => {
   return (
-    <div className="NavPage">
+    <div className="App">
       <NavigationMenu />
       <main>
         <Routes>
@@ -30,4 +30,4 @@ const NavPage: React.FC = () => {
   );
 };
 
-export default NavPage;
+export default App;
