@@ -3,41 +3,20 @@ export type TimeSeriesEntry = {
         y: number;
     };
 
-interface ApiTimeSeriesResponse {
-    timeseries1: Array <{ log_date: string; value: number }>;
-}
 
-export const fetchTimeSeriesData = async (): Promise<TimeSeriesEntry[]> => {
-    try {
-        const response = await fetch("/timeseries");
-        if (!response.ok) {
-            const errorBody = await response.text();
-            throw new Error(`Network response was not ok: ${response.status} ${errorBody}`);
-        }
-        const jsonData: ApiTimeSeriesResponse = await response.json();
+export type TimeSeriesResponse = Record<string, TimeSeriesEntry[]>;
 
-        // Upewnij się, że 'timeseries1' istnieje i jest tablicą
-        if (!jsonData.timeseries1 || !Array.isArray(jsonData.timeseries1)) {
-            console.error("Invalid data structure received from /timeseries:", jsonData);
-            throw new Error("Invalid data structure for timeseries1.");
-        }
 
-        // Mapowanie danych do formatu TimeSeriesEntry
-        const formattedData: TimeSeriesEntry[] = jsonData.timeseries1.map((item) => {
-            if (typeof item.log_date !== 'string' || typeof item.value !== 'number') {
-                console.warn("Skipping invalid item in timeseries1:", item);
-                return null;
-            }
-            return {
-                x: item.log_date,
-                y: item.value
-            };
-        }).filter(item => item !== null) as TimeSeriesEntry[];
+export const fetchTimeSeriesData = async (): Promise<TimeSeriesResponse> => {
+  const resp = await fetch("/timeseries");
+  if (!resp.ok) throw new Error(await resp.text());
+  const json: Record<string, Array<{ log_date: string; value: number }>> = await resp.json(); // TO CHANGE - we need to know the structure of the response
 
-        console.log("Fetched and formatted data:", formattedData);
-        return formattedData;
-    } catch (error) {
-        console.error("Failed to fetch time series data:", error);
-        throw error;
-    }
+  const out: TimeSeriesResponse = {};
+  for (const [key, arr] of Object.entries(json)) {
+    if (!Array.isArray(arr)) continue;
+    out[key] = arr
+      .map(item => ({ x: item.log_date, y: item.value }));
+  }
+  return out;
 };
