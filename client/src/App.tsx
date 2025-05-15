@@ -56,7 +56,6 @@ function App() {
 
                 {error && <p className="App-error" style={{color: 'red', textAlign: 'center'}}>Error: {error}</p>}
 
-
                 <div className="Chart-container">
                     {Object.keys(chartData).length  === 0 && <p style={{textAlign: 'center', padding: '30px'}}>Upload data to visualize</p>}
                     {Object.keys(chartData).length > 0 && <MyChart data={chartData} title="Time Series Analysis" />}

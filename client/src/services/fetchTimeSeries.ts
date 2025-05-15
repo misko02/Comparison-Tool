@@ -3,6 +3,7 @@ export type TimeSeriesEntry = {
         y: number;
     };
 
+
 export type TimeSeriesResponse = Record<string, TimeSeriesEntry[]>;
 
 

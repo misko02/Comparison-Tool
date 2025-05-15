@@ -24,11 +24,12 @@ export const MyChart: React.FC<MyChartProps> = ({data, title}) => {
 
             if (diffHours < 24 * 3) {
                 setTickFormat('%d.%m %H:%M'); // zmiana formatu na dzień i godziny
-                setShowMarkers(diffHours < 5); // jeżeli mniej niż 3h, to pokaż markery
+                setShowMarkers(diffHours < 3); // jeżeli mniej niż 3h, to pokaż markery
             } else if (diffHours < 24 * 5) { // mniej niż 5 dni
-                setTickFormat('%d.%m.%Y %H:%M');
-                setShowMarkers(false);
-            } else {
+                 setTickFormat('%d.%m.%Y %H:%M');
+                 setShowMarkers(false);
+            }
+            else {
                 setTickFormat('%d.%m.%Y');
                 setShowMarkers(false);
             }
@@ -39,6 +40,7 @@ export const MyChart: React.FC<MyChartProps> = ({data, title}) => {
             setShowMarkers(false); // Przywrócenie domyślnych markerów
         }
     };
+
     const colors = [
         '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
         '#9467bd', '#8c564b', '#e377c2', '#7f7f7f',
@@ -73,46 +75,18 @@ export const MyChart: React.FC<MyChartProps> = ({data, title}) => {
                         spikesnap: "cursor",
                         spikedash: "solid",
                         spikethickness: 1,
-                        rangeselector: {
-                            buttons: [{count: 1, label: "1d", step: "day", stepmode: "backward"}, {
-                                count: 7,
-                                label: "1w",
-                                step: "day",
-                                stepmode: "backward"
-                            }, {count: 1, label: "1m", step: "month", stepmode: "backward"}, {step: "all"}]
-                        },
-                        range: xaxisRange[0] && xaxisRange[1] ? xaxisRange : undefined,
-                        rangeslider: {
-                            visible: true,
-                            thickness: 0.05,
-                            bgcolor: '#f8f9fa',
-                            bordercolor: '#ced4da',
-                            borderwidth: 1
-                        },
-                    },
-
-                    yaxis: {
-                        title: 'Value',
-                        autorange: customRange ? false : true,
-                        range: customRange ? [parseFloat(customYMin), parseFloat(customYMax)] : undefined,
-                        showspikes: true,
-                        spikemode: 'across',
-                        spikedash: "solid",
-                        spikethickness: 1
                     },
                     height: 600,
-                    legend: {orientation: "v", x: 30, y: 0.5},
+                    legend: {orientation: "h"},
                     paper_bgcolor: '#f8f9fa',
                     plot_bgcolor: 'white',
-                    dragmode: 'pan',
+                    dragmode: 'pan'
                 }}
                 style={{width: '80%'}}
-                config={{
-                    responsive: true,
-                    scrollZoom: true,
-                    displaylogo: false,
-                    modeBarButtonsToRemove: ['select2d', 'lasso2d']
-                }}
+                config={{responsive: true,
+                scrollZoom: true,
+                displaylogo: false,
+                modeBarButtonsToRemove: ['select2d', 'lasso2d']}}
                 onRelayout={handleRelayout}
             />
                         <div style={{margin: '20px', textAlign: 'center'}}>
