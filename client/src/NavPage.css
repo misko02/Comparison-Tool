@@ -16,7 +16,7 @@ html, body {
 
 main {
   flex: 1;
-  padding: 20px;
+  padding: 20px; /* Change to 0 to remove full page padding */
 }
 
 h1 {
