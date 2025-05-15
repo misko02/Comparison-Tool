@@ -1,0 +1,31 @@
+/* Reset domyślnych marginesów i paddingów */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.NavPage {
+  text-align: center;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+  padding: 20px;
+}
+
+h1 {
+  font-family: 'Roboto', sans-serif;
+  color: #333;
+  margin-top: 20px;
+}
+
+p {
+  font-family: 'Roboto', sans-serif;
+  color: #666;
+}
