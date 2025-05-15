@@ -4,6 +4,8 @@ import './components/Chart/Chart.css'
 import { uploadTimeSeries } from './services/uploadTimeSeries';
 import { MyChart } from './components/Chart/Chart';
 import { fetchTimeSeriesData, TimeSeriesEntry } from './services/fetchTimeSeries';
+import { DataTable } from './components/DataTable/DataTable';
+
 
 function App() {
     const [chartData, setChartData] = useState<Record<string, TimeSeriesEntry[]>>({});
@@ -58,9 +60,24 @@ function App() {
 
 
                 <div className="Chart-container">
-                    {Object.keys(chartData).length  === 0 && <p style={{textAlign: 'center', padding: '30px'}}>Upload data to visualize</p>}
-                    {Object.keys(chartData).length > 0 && <MyChart data={chartData} title="Time Series Analysis" />}
+                    {Object.keys(chartData).length === 0 && (
+                        <p style={{ textAlign: 'center', padding: '30px' }}>Upload data to visualize</p>
+                    )}
+
+                    {Object.keys(chartData).length > 0 && (
+                        <>
+                            <div className="chart-wrapper">
+                                <MyChart data={chartData} title="Time Series Analysis" />
+                            </div>
+                            <div className="tables-wrapper">
+                                {Object.entries(chartData).map(([name, series]) => (
+                                    <DataTable key={name} data={series} title={`Table for ${name}`} />
+                                ))}
+                            </div>
+                        </>
+                    )}
                 </div>
+
 
 
                 <a
