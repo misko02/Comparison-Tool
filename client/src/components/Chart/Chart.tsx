@@ -75,6 +75,31 @@ export const MyChart: React.FC<MyChartProps> = ({data, title}) => {
                         spikesnap: "cursor",
                         spikedash: "solid",
                         spikethickness: 1,
+                        rangeselector: {
+                            buttons: [{count: 1, label: "1d", step: "day", stepmode: "backward"}, {
+                                count: 7,
+                                label: "1w",
+                                step: "day",
+                                stepmode: "backward"
+                            }, {count: 1, label: "1m", step: "month", stepmode: "backward"}, {step: "all"}]
+                        },
+                        range: xaxisRange[0] && xaxisRange[1] ? xaxisRange : undefined,
+                        rangeslider: {
+                            visible: true,
+                            thickness: 0.05,
+                            bgcolor: '#f8f9fa',
+                            bordercolor: '#ced4da',
+                            borderwidth: 1
+                        },
+                    },
+                    yaxis: {
+                        title: 'Value',
+                        autorange: customRange ? false : true,
+                        range: customRange ? [parseFloat(customYMin), parseFloat(customYMax)] : undefined,
+                        showspikes: true,
+                        spikemode: 'across',
+                        spikedash: "solid",
+                        spikethickness: 1
                     },
                     height: 600,
                     legend: {orientation: "h"},
