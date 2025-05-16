@@ -11,6 +11,7 @@ function DashboardPage() {
   const [chartData, setChartData] = useState<Record<string, TimeSeriesEntry[]>>({});
   const [error, setError] = useState<string | null>(null);
 
+
   // Funkcja do pobierania danych
   const handleFetchData = useCallback(async (showLoadingDuringFetch = true) => {
     setError(null);
@@ -21,6 +22,22 @@ function DashboardPage() {
       setError(err.message || 'Failed to fetch data.');
     }
   }, []);
+
+  useEffect(() => {
+    const storedData = localStorage.getItem('chartData');
+    if (storedData) {
+      setChartData(JSON.parse(storedData));
+    } else {
+      handleFetchData(); // tylko jeśli nie mamy danych
+    }
+  }, [handleFetchData]);
+
+  // Zapisuj dane do localStorage gdy się zmienią
+  useEffect(() => {
+    if (Object.keys(chartData).length > 0) {
+      localStorage.setItem('chartData', JSON.stringify(chartData));
+    }
+  }, [chartData]);
 
   // Handler dla zmiany plików w inpucie
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
