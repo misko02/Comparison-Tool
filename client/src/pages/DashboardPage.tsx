@@ -4,7 +4,6 @@ import '../components/Chart/Chart.css'
 import { uploadTimeSeries } from '../services/uploadTimeSeries';
 import { MyChart } from '../components/Chart/Chart';
 import { fetchTimeSeriesData, TimeSeriesEntry } from '../services/fetchTimeSeries';
-import { DataTable } from '../components/DataTable/DataTable';
 
 
 function DashboardPage() {
@@ -84,11 +83,6 @@ function DashboardPage() {
             <>
               <div className="chart-wrapper">
                 <MyChart data={chartData} title="Time Series Analysis" />
-              </div>
-              <div className="tables-wrapper">
-                {Object.entries(chartData).map(([name, series]) => (
-                  <DataTable key={name} data={series} title={`Table for ${name}`} />
-                ))}
               </div>
             </>
           )}
