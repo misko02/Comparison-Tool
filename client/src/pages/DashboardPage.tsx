@@ -1,24 +1,30 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import './DashboardPage.css';
-import '../components/Chart/Chart.css'
+import '../components/Chart/Chart.css';
 import { uploadTimeSeries } from '../services/uploadTimeSeries';
 import { MyChart } from '../components/Chart/Chart';
 import { fetchTimeSeriesData, TimeSeriesEntry } from '../services/fetchTimeSeries';
-
+import { DataImportPopup } from '../components/DataImportPopup/DataImportPopup';
 
 function DashboardPage() {
   const [chartData, setChartData] = useState<Record<string, TimeSeriesEntry[]>>({});
   const [error, setError] = useState<string | null>(null);
-
+  const [isPopupOpen, setIsPopupOpen] = useState(false); // State controlling popup visibility
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]); // State storing selected files for popup
+  const [isLoading, setIsLoading] = useState(false); // State indicating chart loading
+  const [isDataLoaded, setIsDataLoaded] = useState(false); // State tracking if data is loaded (hides load button)
 
   // Funkcja do pobierania danych
-  const handleFetchData = useCallback(async (showLoadingDuringFetch = true) => {
+  const handleFetchData = useCallback(async (showLoading = true) => {
+    if (showLoading) setIsLoading(true);
     setError(null);
     try {
       const allSeries = await fetchTimeSeriesData();
       setChartData(allSeries);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch data.');
+    } finally {
+      if (showLoading) setIsLoading(false); // Resets isLoading after completion
     }
   }, []);
 
@@ -41,16 +47,32 @@ function DashboardPage() {
   // Handler dla zmiany plików w inpucie
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     setError(null);
-    await uploadTimeSeries(event, (anySuccess: any) => {
-      if (anySuccess) {
-        console.log("Upload finished, refreshing chart data...");
-        handleFetchData(false); // Odśwież dane na wykresie po udanym uploadzie
-      } else {
-        console.log("Upload finished, but no files were successfully processed or no files selected.");
-      }
-    });
+    const files = Array.from(event.target.files || []); // Gets selected files
+    if (files.length > 0) {
+      setSelectedFiles(files); // Stores files in state
+      setIsPopupOpen(true); // Opens popup
+      await uploadTimeSeries(event, () => {});
+    }
   };
 
+  // Function handling popup import completion
+  const handlePopupComplete = (results: any[]) => {
+    if (results.length > 0) {
+      setIsLoading(true);
+      handleFetchData(false).then(() => { // Fetches data without showing loading
+        setIsLoading(false); // Resets loading
+        setIsDataLoaded(true); // Hides load button
+      });
+    }
+    setIsPopupOpen(false); // Closes popup
+    setSelectedFiles([]); // Clears selected files list
+  };
+
+  // Function handling popup cancellation
+  const handlePopupClose = () => {
+    setIsPopupOpen(false); // Closes popup
+    setSelectedFiles([]); // Clears selected files list
+  };
 
   return (
     <div className="App">
@@ -58,33 +80,35 @@ function DashboardPage() {
         <div className="App-title">
           <h1>Data Comparison Tool</h1>
         </div>
-        <div className="App-controls">
-          <label htmlFor="file-upload" className="custom-file-upload">
-            {'Upload files'}
-          </label>
-          <input
-            id="file-upload"
-            type="file"
-            multiple
-            accept=".json"
-            onChange={handleFileUpload}
-            style={{ display: 'none' }}
-          />
-        </div>
+        {/* Load button is hidden after data is loaded */}
+        {!isDataLoaded && (
+          <div className="App-controls">
+            <label htmlFor="file-upload" className="custom-file-upload">
+              {'Upload files'}
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              multiple
+              accept=".json"
+              onChange={handleFileUpload}
+              style={{ display: 'none' }}
+            />
+          </div>
+        )}
 
         {error && <p className="App-error" style={{ color: 'red', textAlign: 'center' }}>Error: {error}</p>}
 
         <div className="Chart-container">
-          {Object.keys(chartData).length === 0 && (
+          {/* Chart loading indicator */}
+          {isLoading && <p style={{ textAlign: 'center', padding: '30px' }}>Loading chart...</p>}
+          {!isLoading && Object.keys(chartData).length === 0 && (
             <p style={{ textAlign: 'center', padding: '30px' }}>Upload data to visualize</p>
           )}
-
-          {Object.keys(chartData).length > 0 && (
-            <>
-              <div className="chart-wrapper">
-                <MyChart data={chartData} title="Time Series Analysis" />
-              </div>
-            </>
+          {!isLoading && Object.keys(chartData).length > 0 && (
+            <div className="chart-wrapper">
+              <MyChart data={chartData} title="Time Series Analysis" />
+            </div>
           )}
         </div>
 
@@ -96,9 +120,11 @@ function DashboardPage() {
         >
           Check repository
         </a>
+
+        <DataImportPopup show={isPopupOpen} onHide={handlePopupClose} files={selectedFiles} onComplete={handlePopupComplete} />
       </main>
     </div>
   );
-};
+}
 
 export default DashboardPage;

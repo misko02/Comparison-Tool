@@ -8,6 +8,7 @@ interface NavItem {
 }
 
 export const NavigationMenu = (): JSX.Element => {
+  // Array with the list of menu subpages, their names, and paths
   const navItems: NavItem[] = [
     { text: 'Data', to: '/data' },
     { text: 'Dashboard', to: '/dashboard' },
@@ -21,9 +22,16 @@ export const NavigationMenu = (): JSX.Element => {
   return (
     <div className="navigation-menu top">
       <div className="logo-placeholder">Logo</div>
-      {navItems.map((item) => (
-        <ButtonsTopMenu key={item.text} text={item.text} to={item.to} />
-      ))}
+      {/* navItems.map transforms each array element into a ButtonsTopMenu component */}
+      {navItems.map(
+        (item) => (
+          <ButtonsTopMenu
+            key={item.text}
+            text={item.text}
+            to={item.to}
+          />
+        )
+      )}
     </div>
   );
 };
