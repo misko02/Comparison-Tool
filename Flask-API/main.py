@@ -10,7 +10,6 @@ timeseries_manager = TimeSeriesManager()
 app = Flask(__name__)
 
 
-
 @app.route("/timeseries", methods=["GET"])
 def get_timeseries():
     key = request.args.get("key")
@@ -33,6 +32,11 @@ def add_timeseries():
         timeseries_manager.add_timeseries(key, timeseries_list)
 
     return jsonify({"status": "Data uploaded", "files": list(data.keys())}), 201
+
+@app.route("/clear-timeseries", methods=["DELETE"])
+def clear_timeseries():
+    timeseries_manager.clear_timeseries()
+    return jsonify({"status": "All timeseries cleared"}), 200
 
 
 
