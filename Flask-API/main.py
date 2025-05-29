@@ -13,7 +13,10 @@ app = Flask(__name__)
 @app.route("/timeseries", methods=["GET"])
 def get_timeseries():
     key = request.args.get("key")
-    data = timeseries_manager.get_timeseries(key)
+    try:
+        data = timeseries_manager.get_timeseries(key)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
     if data is None:
         return jsonify({"error": "Key not found"}), 404
     return jsonify(data), 200
@@ -29,16 +32,22 @@ def add_timeseries():
     for key, timeseries_list in data.items():
         if not isinstance(timeseries_list, list):
             return jsonify({"error": f"Invalid data format for key '{key}'"}), 400
-        timeseries_manager.add_timeseries(key, timeseries_list)
+        try:
+            timeseries_manager.add_timeseries(key, timeseries_list)
+        except Exception as e:
+            return jsonify({"error": str(e)}), 400
 
     return jsonify({"status": "Data uploaded", "files": list(data.keys())}), 201
 
 @app.route("/clear-timeseries", methods=["DELETE"])
 def clear_timeseries():
-    timeseries_manager.clear_timeseries()
+    try:
+        timeseries_manager.clear_timeseries()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
     return jsonify({"status": "All timeseries cleared"}), 200
 
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=5000, debug=True)
