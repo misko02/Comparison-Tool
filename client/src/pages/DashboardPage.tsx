@@ -1,78 +1,110 @@
+// src/DashboardPage.tsx
 import React, { useState, useCallback, useEffect } from 'react';
 import './DashboardPage.css';
 import '../components/Chart/Chart.css';
-import { uploadTimeSeries } from '../services/uploadTimeSeries';
+import { sendProcessedTimeSeriesData } from '../services/uploadTimeSeries';
 import { MyChart } from '../components/Chart/Chart';
 import { fetchTimeSeriesData, TimeSeriesEntry } from '../services/fetchTimeSeries';
 import { DataImportPopup } from '../components/DataImportPopup/DataImportPopup';
 
+
 function DashboardPage() {
   const [chartData, setChartData] = useState<Record<string, TimeSeriesEntry[]>>({});
   const [error, setError] = useState<string | null>(null);
-  const [isPopupOpen, setIsPopupOpen] = useState(false); // State controlling popup visibility
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]); // State storing selected files for popup
-  const [isLoading, setIsLoading] = useState(false); // State indicating chart loading
-  const [isDataLoaded, setIsDataLoaded] = useState(false); // State tracking if data is loaded (hides load button)
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Funkcja do pobierania danych
-  const handleFetchData = useCallback(async (showLoading = true) => {
-    if (showLoading) setIsLoading(true);
+  const handleFetchData = useCallback(async (showLoadingIndicator = true) => {
+    if (showLoadingIndicator) setIsLoading(true);
     setError(null);
     try {
       const allSeries = await fetchTimeSeriesData();
       setChartData(allSeries);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch data.');
+      setChartData({}); // Wyczyść dane w przypadku błędu
     } finally {
-      if (showLoading) setIsLoading(false); // Resets isLoading after completion
+      if (showLoadingIndicator) setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
     const storedData = localStorage.getItem('chartData');
     if (storedData) {
-      setChartData(JSON.parse(storedData));
+      try {
+        const parsedData = JSON.parse(storedData);
+        setChartData(parsedData);
+      } catch (e) {
+        localStorage.removeItem('chartData');
+        handleFetchData();
+      }
     } else {
-      handleFetchData(); // tylko jeśli nie mamy danych
+      handleFetchData();
     }
   }, [handleFetchData]);
 
-  // Zapisuj dane do localStorage gdy się zmienią
   useEffect(() => {
     if (Object.keys(chartData).length > 0) {
       localStorage.setItem('chartData', JSON.stringify(chartData));
     }
   }, [chartData]);
 
-  // Handler dla zmiany plików w inpucie
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     setError(null);
-    const files = Array.from(event.target.files || []); // Gets selected files
+    const files = Array.from(event.target.files || []);
     if (files.length > 0) {
-      setSelectedFiles(files); // Stores files in state
-      setIsPopupOpen(true); // Opens popup
-      await uploadTimeSeries(event, () => {});
+      setSelectedFiles(files);
+      setIsPopupOpen(true);
     }
+    event.target.value = '';
   };
 
-  // Function handling popup import completion
-  const handlePopupComplete = (results: any[]) => {
-    if (results.length > 0) {
+  const handlePopupComplete = async (processedData: Record<string, any[]>) => {
+    setIsPopupOpen(false); // Zamknij popup najpierw
+
+    if (Object.keys(processedData).length > 0) {
       setIsLoading(true);
-      handleFetchData(false).then(() => { // Fetches data without showing loading
-        setIsLoading(false); // Resets loading
-        setIsDataLoaded(true); // Hides load button
+      setError(null);
+      await sendProcessedTimeSeriesData(processedData, (success) => {
+        if (!success) {
+          setError("Przetwarzanie danych lub wysyłanie na serwer nie powiodło się.");
+        }
+        setIsLoading(false);
       });
+    } else {
+        console.log("Nie przetworzono żadnych danych z plików.");
     }
-    setIsPopupOpen(false); // Closes popup
-    setSelectedFiles([]); // Clears selected files list
   };
 
-  // Function handling popup cancellation
   const handlePopupClose = () => {
-    setIsPopupOpen(false); // Closes popup
-    setSelectedFiles([]); // Clears selected files list
+    setIsPopupOpen(false);
+    setSelectedFiles([]);
   };
+
+    const handleReset = async () => {
+    setIsLoading(true); // Pokaż wskaźnik ładowania podczas resetowania
+    setError(null);
+    setChartData({}); // Wyczyść dane na wykresie
+      localStorage.removeItem('chartData');
+
+    try {
+      const resp = await fetch('/clear-timeseries', { method: 'DELETE' });
+      if (!resp.ok) {
+        const errorText = await resp.text();
+        console.error("Failed to clear timeseries on backend:", errorText);
+        setError(`Nie udało się wyczyścić danych na serwerze: ${errorText}. Dane na wykresie zostały zresetowane.`);
+      } else {
+        console.log("Timeseries data cleared on backend.");
+      }
+    } catch (err: any) {
+      console.error("Error clearing timeseries on backend:", err);
+      setError(`Błąd podczas czyszczenia danych na serwerze: ${err.message}. Dane na wykresie zostały zresetowane.`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   return (
     <div className="App">
@@ -80,30 +112,34 @@ function DashboardPage() {
         <div className="App-title">
           <h1>Data Comparison Tool</h1>
         </div>
-        {/* Load button is hidden after data is loaded */}
-        {!isDataLoaded && (
-          <div className="App-controls">
-            <label htmlFor="file-upload" className="custom-file-upload">
-              {'Upload files'}
-            </label>
-            <input
-              id="file-upload"
-              type="file"
-              multiple
-              accept=".json"
-              onChange={handleFileUpload}
-              style={{ display: 'none' }}
-            />
-          </div>
-        )}
 
+        <div className="App-controls">
+          <label htmlFor="file-upload" className={`custom-file-upload ${isLoading ? 'disabled' : ''}`}>
+            {isLoading ? 'Loading...' : 'Upload files'}
+          </label>
+          <input
+            id="file-upload"
+            type="file"
+            multiple
+            accept=".json"
+            onChange={handleFileUpload}
+            style={{ display: 'none' }}
+            disabled={isLoading}
+          />
+        </div>
+           <button
+              onClick={handleReset}
+              className="custom-reset-button"
+              disabled={isLoading}
+            >
+              Reset data
+            </button>
         {error && <p className="App-error" style={{ color: 'red', textAlign: 'center' }}>Error: {error}</p>}
 
         <div className="Chart-container">
-          {/* Chart loading indicator */}
-          {isLoading && <p style={{ textAlign: 'center', padding: '30px' }}>Loading chart...</p>}
-          {!isLoading && Object.keys(chartData).length === 0 && (
-            <p style={{ textAlign: 'center', padding: '30px' }}>Upload data to visualize</p>
+          {isLoading && Object.keys(chartData).length === 0 && <p style={{ textAlign: 'center', padding: '30px' }}>Loading chart...</p>}
+          {!isLoading && Object.keys(chartData).length === 0 && !error && (
+            <p style={{ textAlign: 'center', padding: '30px' }}>Load data to visualize</p>
           )}
           {!isLoading && Object.keys(chartData).length > 0 && (
             <div className="chart-wrapper">
@@ -121,7 +157,12 @@ function DashboardPage() {
           Check repository
         </a>
 
-        <DataImportPopup show={isPopupOpen} onHide={handlePopupClose} files={selectedFiles} onComplete={handlePopupComplete} />
+        <DataImportPopup
+            show={isPopupOpen}
+            onHide={handlePopupClose}
+            files={selectedFiles}
+            onComplete={handlePopupComplete}
+        />
       </main>
     </div>
   );

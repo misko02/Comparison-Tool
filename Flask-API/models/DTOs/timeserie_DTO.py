@@ -1,7 +1,7 @@
 from dataclasses import dataclass
+import dateutil
+from dateutil.parser import parse
 from datetime import datetime
-
-
 @dataclass 
 class TimeserieDTO:
     
@@ -11,8 +11,7 @@ class TimeserieDTO:
     
     log_date: datetime
     values: list[float]
-    id: int
-    
+
     @classmethod
     def from_dict(cls, data):
         
@@ -21,8 +20,7 @@ class TimeserieDTO:
         """
         
         return cls(
-            log_date=datetime.strptime(data["log_date"], "%Y-%m-%d %H:%M:%S.%f"),
+            log_date=dateutil.parser.parse(data['log_date']),
             values=data["values"],
-            id=data["id"]
         )
     

@@ -25,7 +25,7 @@ class TimeSeriesManager:
 
         Args:
             key (str): Identifier for the timeseries
-            data (list[dict]): List of timeseries data, each item should be a dictionary with keys "log_date", "values", and "id"
+            data (list[dict]): List of timeseries data, each item should be a dictionary with keys "log_date", "values"
 
         Raises:
             ValueError: If the data format is invalid
@@ -41,7 +41,7 @@ class TimeSeriesManager:
             for timeserie in data:
                 if not isinstance(timeserie, dict):
                     raise ValueError(f"Invalid timeserie value: {timeserie}")
-                if not all(k in timeserie for k in ("log_date", "values", "id")):
+                if not all(k in timeserie for k in ("log_date", "values")):
                     raise ValueError(f"Missing keys in timeserie: {timeserie}")
                 try:
                     timeserie_model = TimeserieDTO.from_dict(timeserie)
