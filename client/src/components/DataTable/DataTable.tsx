@@ -8,7 +8,8 @@ interface DataTableProps {
 }
 
 export const DataTable: React.FC<DataTableProps> = ({ data, title }) => {
-    const rows = data.slice(0, 50); // tylko pierwsze 50 wierszy
+    const rows = data.slice(0, 20);
+    const columns = rows.length > 0 ? Object.keys(rows[0]) : [];
 
     return (
         <div className="data-table-container">
@@ -16,15 +17,17 @@ export const DataTable: React.FC<DataTableProps> = ({ data, title }) => {
             <table className="data-table">
                 <thead>
                     <tr>
-                        <th>Time</th>
-                        <th>Value</th>
+                        {columns.map((col) => (
+                            <th key={col}>{col}</th>
+                        ))}
                     </tr>
                 </thead>
                 <tbody>
                     {rows.map((entry, index) => (
                         <tr key={index}>
-                            <td>{entry.x}</td>
-                            <td>{entry.y}</td>
+                            {columns.map((col) => (
+                                <td key={col}>{(entry as any)[col]}</td>
+                            ))}
                         </tr>
                     ))}
                 </tbody>

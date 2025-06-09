@@ -1,15 +1,15 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { fetchTimeSeriesData, TimeSeriesEntry } from '../services/fetchTimeSeries';
+import { fetchRawTimeSeriesData } from '../services/fetchTimeSeries';
 import { DataTable } from '../components/DataTable/DataTable';
 
 const DataPage: React.FC = () => {
-  const [chartData, setChartData] = useState<Record<string, TimeSeriesEntry[]>>({});
+  const [chartData, setChartData] = useState<Record<string, any[]>>({});
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setError(null);
     try {
-      const allSeries = await fetchTimeSeriesData();
+      const allSeries = await fetchRawTimeSeriesData(); // użycie nowej funkcji
       setChartData(allSeries);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch data.');
@@ -29,7 +29,7 @@ const DataPage: React.FC = () => {
         <p style={{ textAlign: 'center', padding: '30px' }}>No data available.</p>
       ) : (
         Object.entries(chartData).map(([name, series]) => (
-          <DataTable key={name} data={series} title={`Table for ${name}`} />
+          <DataTable key={name} data={series} title={name} />
         ))
       )}
     </div>

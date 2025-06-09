@@ -60,22 +60,25 @@ function DashboardPage() {
     event.target.value = '';
   };
 
-  const handlePopupComplete = async (processedData: Record<string, any[]>) => {
-    setIsPopupOpen(false); // Zamknij popup najpierw
+const handlePopupComplete = async (processedData: Record<string, any[]>) => {
+  setIsPopupOpen(false); // Zamknij popup najpierw
 
-    if (Object.keys(processedData).length > 0) {
-      setIsLoading(true);
-      setError(null);
-      await sendProcessedTimeSeriesData(processedData, (success) => {
-        if (!success) {
-          setError("Przetwarzanie danych lub wysyłanie na serwer nie powiodło się.");
-        }
-        setIsLoading(false);
-      });
-    } else {
-        console.log("Nie przetworzono żadnych danych z plików.");
-    }
-  };
+  if (Object.keys(processedData).length > 0) {
+    setIsLoading(true);
+    setError(null);
+    await sendProcessedTimeSeriesData(processedData, async (success) => {
+      if (!success) {
+        setError("Przetwarzanie danych lub wysyłanie na serwer nie powiodło się.");
+      } else {
+        await handleFetchData(); // <-- DODAJ TO, aby pobrać świeże dane i zaktualizować wykres
+      }
+      setIsLoading(false);
+    });
+  } else {
+    console.log("Nie przetworzono żadnych danych z plików.");
+  }
+};
+
 
   const handlePopupClose = () => {
     setIsPopupOpen(false);

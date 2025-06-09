@@ -20,3 +20,11 @@ export const fetchTimeSeriesData = async (): Promise<TimeSeriesResponse> => {
   }
   return out;
 };
+
+export const fetchRawTimeSeriesData = async (): Promise<Record<string, any[]>> => {
+  const resp = await fetch("/timeseries");
+  if (!resp.ok) throw new Error(await resp.text());
+
+  const rawJson = await resp.json();
+  return rawJson;
+};
