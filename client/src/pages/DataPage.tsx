@@ -5,12 +5,17 @@ import { DataTable } from '../components/DataTable/DataTable';
 const DataPage: React.FC = () => {
   const [chartData, setChartData] = useState<Record<string, any[]>>({});
   const [error, setError] = useState<string | null>(null);
+  const [selectedTable, setSelectedTable] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setError(null);
     try {
-      const allSeries = await fetchRawTimeSeriesData(); // użycie nowej funkcji
+      const allSeries = await fetchRawTimeSeriesData();
       setChartData(allSeries);
+      const firstTable = Object.keys(allSeries)[0];
+      if (firstTable) {
+        setSelectedTable(firstTable);
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to fetch data.');
     }
@@ -21,17 +26,39 @@ const DataPage: React.FC = () => {
   }, [fetchData]);
 
   return (
-    <div className="App-main-content">
-      <h1>Data Page</h1>
-      {error && <p style={{ color: 'red', textAlign: 'center' }}>Error: {error}</p>}
+    <div className="container-fluid vh-100 d-flex flex-column bg-light">
+      {error && <p className="text-danger text-center">Error: {error}</p>}
 
-      {Object.keys(chartData).length === 0 ? (
-        <p style={{ textAlign: 'center', padding: '30px' }}>No data available.</p>
-      ) : (
-        Object.entries(chartData).map(([name, series]) => (
-          <DataTable key={name} data={series} title={name} />
-        ))
-      )}
+      <div className="row flex-grow-1" style={{ minHeight: 0 }}>
+        {/* Lewa część - tabelka */}
+        <div className="col-9 d-flex flex-column p-3 border-end bg-white" style={{ overflow: 'auto', minHeight: 0 }}>
+          {selectedTable ? (
+            <DataTable data={chartData[selectedTable]} title={selectedTable} />
+          ) : (
+            <p className="text-center py-4">No table selected.</p>
+          )}
+        </div>
+
+        {/* Prawa część - lista tabel */}
+        <div className="col-3 d-flex flex-column overflow-auto p-3 bg-white">
+          <h3>Available Tables</h3>
+          {Object.keys(chartData).length === 0 ? (
+            <p className="text-center py-4">No data available.</p>
+          ) : (
+            <div className="list-group">
+              {Object.keys(chartData).map((name) => (
+                <button
+                  key={name}
+                  onClick={() => setSelectedTable(name)}
+                  className={`list-group-item list-group-item-action ${selectedTable === name ? 'list-group-item-primary' : ''}`}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
