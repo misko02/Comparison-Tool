@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import { PencilSquare } from 'react-bootstrap-icons';
+import { DataTable } from '../DataTable/DataTable';
+
 
 interface Props {
   show: boolean;
@@ -208,13 +210,13 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
               </Form.Group>
             </Form>
             {currentFileRawData && currentFileRawData.length > 0 && typeof currentFileRawData[0] === 'object' && (
-              <details className="mt-3">
-                <summary>Preview</summary>
-                <pre style={{ maxHeight: '200px', overflow: 'auto', background: '#f5f5f5', padding: '10px' }}>
-                  {JSON.stringify(currentFileRawData[0], null, 2)}
-                </pre>
-              </details>
+              <div className="mt-3">
+                <p className="fw-bold">Preview</p>
+                <DataTable data={currentFileRawData} title="" />
+              </div>
+
             )}
+
           </>
         )}
         {!isLoadingFile && !currentFileRawData && !errorParsingFile && files.length > 0 && (
