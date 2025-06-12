@@ -44,23 +44,125 @@ def get_mean():
 
     return jsonify({"mean": mean}), 200
 
+@app.route("/timeseries/median", methods=["GET"])
+def get_median():
+    filename = request.args.get("filename")
+    category = request.args.get("category")
+    try:
+        data = timeseries_manager.get_timeseries(filename, category)
+        median = metric_service.calculate_basic_statistics(data)["median"]
+    except Exception as e:
+        logger.error(f"Error calculating median for filename '{filename}' and category '{category}': {e}")
+        return jsonify({"error": str(e)}), 400
+    if median is None:
+        logger.warning(f"No valid timeseries data provided for median calculation for filename '{filename}' and category '{category}'")
+        return jsonify({"error": "No valid timeseries data provided"}), 400
+    logger.info(f"Successfully calculated median for provided timeseries data for filename '{filename}' and category '{category}'")
 
-# # args: filename, category 
-# @app.route("/timeseries/get_mean/", methods=["GET"])
-# def get_mean():
-#     filename = request.args.get("filename")
-#     category = request.args.get("category")
-#     try:
-#         timeseries = timeseries_manager.get_timeseries(filename, category)
-#     except Exception as e:
-#         logger.error(f"Error calculating mean for filename '{filename}' and category '{category}': {e}")
-#         return jsonify({"error": str(e)}), 400
-#     if not mean:
-#         logger.warning(f"No valid timeseries data provided for mean calculation for filename '{filename}' and category '{category}'")
-#         return jsonify({"error": "No valid timeseries data provided"}), 400
-#     logger.info(f"Successfully calculated mean for provided timeseries data for filename '{filename}' and category '{category}'")
+    return jsonify({"median": median}), 200
+@app.route("/timeseries/variance", methods=["GET"])
+def get_variance():
+    filename = request.args.get("filename")
+    category = request.args.get("category")
+    try:
+        data = timeseries_manager.get_timeseries(filename, category)
+        variance = metric_service.calculate_basic_statistics(data)["variance"]
+    except Exception as e:
+        logger.error(f"Error calculating variance for filename '{filename}' and category '{category}': {e}")
+        return jsonify({"error": str(e)}), 400
+    if variance is None:
+        logger.warning(f"No valid timeseries data provided for variance calculation for filename '{filename}' and category '{category}'")
+        return jsonify({"error": "No valid timeseries data provided"}), 400
+    logger.info(f"Successfully calculated variance for provided timeseries data for filename '{filename}' and category '{category}'")
 
-#     return jsonify({"mean": mean}), 200
+    return jsonify({"variance": variance}), 200
+@app.route("/timeseries/standard_deviation", methods=["GET"])
+def get_standard_deviation():
+    filename = request.args.get("filename")
+    category = request.args.get("category")
+    try:
+        data = timeseries_manager.get_timeseries(filename, category)
+        std_dev = metric_service.calculate_basic_statistics(data)["std_dev"]
+    except Exception as e:
+        logger.error(f"Error calculating standard deviation for filename '{filename}' and category '{category}': {e}")
+        return jsonify({"error": str(e)}), 400
+    if std_dev is None:
+        logger.warning(f"No valid timeseries data provided for standard deviation calculation for filename '{filename}' and category '{category}'")
+        return jsonify({"error": "No valid timeseries data provided"}), 400
+    logger.info(f"Successfully calculated standard deviation for provided timeseries data for filename '{filename}' and category '{category}'")
+
+    return jsonify({"standard_deviation": std_dev}), 200
+
+
+@app.route("/timeseries/autocorrelation", methods=["GET"])
+def get_autocorrelation():
+    filename = request.args.get("filename")
+    category = request.args.get("category")
+    nlags = request.args.get("nlags", default=20, type=int)
+    try:
+        data = timeseries_manager.get_timeseries(filename, category)
+        acf_values = metric_service.calculate_autocorrelation(data, nlags)
+    except Exception as e:
+        logger.error(f"Error calculating autocorrelation for filename '{filename}' and category '{category}': {e}")
+        return jsonify({"error": str(e)}), 400
+    if acf_values is None or len(acf_values) == 0:
+        logger.warning(f"No valid timeseries data provided for autocorrelation calculation for filename '{filename}' and category '{category}'")
+        return jsonify({"error": "No valid timeseries data provided"}), 400
+    logger.info(f"Successfully calculated autocorrelation for provided timeseries data for filename '{filename}' and category '{category}'")
+
+    return jsonify({"autocorrelation": acf_values.tolist()}), 200
+
+@app.route("/timeseries/coefficient_of_variation", methods=["GET"])
+def get_coefficient_of_variation():
+    filename = request.args.get("filename")
+    category = request.args.get("category")
+    try:
+        data = timeseries_manager.get_timeseries(filename, category)
+        cv = metric_service.calculate_coefficient_of_variation(data)
+    except Exception as e:
+        logger.error(f"Error calculating coefficient of variation for filename '{filename}' and category '{category}': {e}")
+        return jsonify({"error": str(e)}), 400
+    if cv is None:
+        logger.warning(f"No valid timeseries data provided for coefficient of variation calculation for filename '{filename}' and category '{category}'")
+        return jsonify({"error": "No valid timeseries data provided"}), 400
+    logger.info(f"Successfully calculated coefficient of variation for provided timeseries data for filename '{filename}' and category '{category}'")
+
+    return jsonify({"coefficient_of_variation": cv}), 200
+
+@app.route("/timeseries/iqr", methods=["GET"])
+def get_iqr():
+    filename = request.args.get("filename")
+    category = request.args.get("category")
+    try:
+        data = timeseries_manager.get_timeseries(filename, category)
+        iqr = metric_service.calculate_iqr(data)
+    except Exception as e:
+        logger.error(f"Error calculating IQR for filename '{filename}' and category '{category}': {e}")
+        return jsonify({"error": str(e)}), 400
+    if iqr is None:
+        logger.warning(f"No valid timeseries data provided for IQR calculation for filename '{filename}' and category '{category}'")
+        return jsonify({"error": "No valid timeseries data provided"}), 400
+    logger.info(f"Successfully calculated IQR for provided timeseries data for filename '{filename}' and category '{category}'")
+
+    return jsonify({"iqr": iqr}), 200
+
+@app.route("/timeseries/pearson_correlation", methods=["GET"])
+def get_pearson_correlation():
+    filename1 = request.args.get("filename1")
+    filename2 = request.args.get("filename2")
+    category = request.args.get("category")
+    try:
+        data1 = timeseries_manager.get_timeseries(filename1, category)
+        data2 = timeseries_manager.get_timeseries(filename2, category)
+        correlation = metric_service.calculate_pearson_correlation(data1, data2)
+    except Exception as e:
+        logger.error(f"Error calculating Pearson correlation for filenames '{filename1}' and '{filename2}' in category '{category}': {e}")
+        return jsonify({"error": str(e)}), 400
+    if correlation is None:
+        logger.warning(f"No valid timeseries data provided for Pearson correlation calculation for filenames '{filename1}' and '{filename2}' in category '{category}'")
+        return jsonify({"error": "No valid timeseries data provided"}), 400
+    logger.info(f"Successfully calculated Pearson correlation for provided timeseries data for filenames '{filename1}' and '{filename2}' in category '{category}'")
+    return jsonify({"pearson_correlation": correlation}), 200
 
 @app.route("/upload-timeseries", methods=["POST"])
 def add_timeseries():
