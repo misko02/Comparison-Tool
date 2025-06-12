@@ -22,7 +22,7 @@ class TimeSeriesManager:
 
         Args:
             key (str): Identifier for the timeseries
-            data (list[dict]): List of timeseries data, each item should be a dictionary with keys "log_date", "values", and "id"
+            data (list[dict]): List of timeseries data, each item should be a dictionary with keys "log_date", "values"
 
         Raises:
             ValueError: If the data format is invalid
