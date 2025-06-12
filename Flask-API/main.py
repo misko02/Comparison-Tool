@@ -171,6 +171,7 @@ def add_timeseries():
         logger.error("Invalid data format: Expected a JSON object with keys as identifiers")
         return jsonify({"error": "Expected a JSON object with keys as identifiers"}), 400
 
+    timeseries_manager.clear_timeseries()
 
     for time, values in data.items():
         if not isinstance(values, dict):

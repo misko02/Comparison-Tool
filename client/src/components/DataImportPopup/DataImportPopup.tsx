@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
-import { PencilSquare } from 'react-bootstrap-icons';
 import { DataTable } from '../DataTable/DataTable';
 
 interface Props {
@@ -173,7 +172,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
 
       <Modal.Body>
         <Form.Group className="mb-4">
-            <Form.Label className="fw-bold">1. Define Metric Group Name (e.g., humidity, temperature)</Form.Label>
+            <Form.Label className="fw-bold">1. Define group name (e.g., humidity, temperature)</Form.Label>
             <Form.Control
                 type="text"
                 value={metricName}
@@ -209,7 +208,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
               </Form.Group>
 
               <Form.Group>
-                <Form.Label>Value Key Name (in final merged data)</Form.Label>
+                <Form.Label>Value Name</Form.Label>
                 <Form.Control
                     type="text"
                     value={currentConfig.valueKey || ''}

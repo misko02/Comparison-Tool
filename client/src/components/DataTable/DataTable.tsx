@@ -1,3 +1,4 @@
+// src/components/DataTable/DataTable.tsx
 import React from 'react';
 import { TimeSeriesEntry } from '@/services/fetchTimeSeries';
 
@@ -8,7 +9,12 @@ interface DataTableProps {
 
 export const DataTable: React.FC<DataTableProps> = ({ data, title }) => {
   const rows = data.slice(0, 20);
-  const columns = rows.length > 0 ? Object.keys(rows[0]) : [];
+  const columns = Object.keys(rows[0]);
+
+  const columnHeaderNames: Record<string, string> = {
+      x: 'Date',
+      y: 'Value'
+  };
 
   return (
     <div className="w-100">
@@ -18,7 +24,9 @@ export const DataTable: React.FC<DataTableProps> = ({ data, title }) => {
           <thead className="table-primary">
             <tr>
               {columns.map((col) => (
-                <th key={col} scope="col">{col}</th>
+                <th key={col} scope="col">
+                  {columnHeaderNames[col] || col}
+                </th>
               ))}
             </tr>
           </thead>
@@ -26,7 +34,12 @@ export const DataTable: React.FC<DataTableProps> = ({ data, title }) => {
             {rows.map((entry, index) => (
               <tr key={index}>
                 {columns.map((col) => (
-                  <td key={col}>{(entry as any)[col]}</td>
+                  <td key={col}>
+                    {col === 'x'
+                      ? new Date((entry as any)[col]).toLocaleString()
+                      : (entry as any)[col]
+                    }
+                  </td>
                 ))}
               </tr>
             ))}
