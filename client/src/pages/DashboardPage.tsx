@@ -68,12 +68,12 @@ function DashboardPage() {
       setError(null);
       await sendProcessedTimeSeriesData(processedData, (success) => {
         if (!success) {
-          setError("Przetwarzanie danych lub wysyłanie na serwer nie powiodło się.");
+          setError("File processing failed. Please check the files and try again.");
         }
         setIsLoading(false);
       });
     } else {
-        console.log("Nie przetworzono żadnych danych z plików.");
+        console.log("No data to upload after processing.");
     }
   };
 
@@ -93,13 +93,13 @@ function DashboardPage() {
       if (!resp.ok) {
         const errorText = await resp.text();
         console.error("Failed to clear timeseries on backend:", errorText);
-        setError(`Nie udało się wyczyścić danych na serwerze: ${errorText}. Dane na wykresie zostały zresetowane.`);
+        setError(`Failed to clear timeseries on backend: ${errorText}. Data on the chart has been reset.`);
       } else {
         console.log("Timeseries data cleared on backend.");
       }
     } catch (err: any) {
       console.error("Error clearing timeseries on backend:", err);
-      setError(`Błąd podczas czyszczenia danych na serwerze: ${err.message}. Dane na wykresie zostały zresetowane.`);
+      setError('Failed to clear timeseries on backend:  ${err.message}. Data on the chart has been reset.');
     } finally {
       setIsLoading(false);
     }

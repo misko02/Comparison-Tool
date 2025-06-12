@@ -58,17 +58,17 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
           setLogDateColumn(columns.find(c => c.toLowerCase().includes('date') || c.toLowerCase().includes('time')) || columns[0] || '');
           setValueColumn(columns.find(c => c.toLowerCase().includes('value') || c.toLowerCase().includes('metric')) || (columns.length > 1 ? columns[1] : columns[0]) || '');
         } else {
-          setErrorParsingFile(`Pierwszy wpis w pliku ${file.name} nie jest obiektem.`);
+          setErrorParsingFile(`First entry of file ${file.name} is not an object.`);
           resetCurrentFileState();
         }
       } else {
-        setErrorParsingFile(`Plik ${file.name} jest pusty lub nie zawiera tablicy obiektów.`);
+        setErrorParsingFile(`File ${file.name} is empty or doesn't contain a list of objects.`);
         resetCurrentFileState();
         setCurrentFileRawData([]);
       }
     } catch (e: any) {
       console.error(`Error reading or parsing file ${file.name}:`, e);
-      setErrorParsingFile(`Błąd parsowania pliku ${file.name}: ${e.message}`);
+      setErrorParsingFile(`Error parsing file ${file.name}: ${e.message}`);
       resetCurrentFileState();
     } finally {
       setIsLoadingFile(false);
@@ -97,7 +97,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
 
   const handleNext = () => {
     if (!currentFileRawData || !logDateColumn || !valueColumn || errorParsingFile) {
-      alert("Proszę wybrać poprawne kolumny lub naprawić błędy w pliku.");
+      alert("Please select correct columns or fix errors in file.");
       return;
     }
 
@@ -107,15 +107,15 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
     const transformedFileEntries = currentFileRawData
       .map(originalEntry => {
         if (typeof originalEntry !== 'object' || originalEntry === null) {
-          console.warn("Pominięto wpis, który nie jest obiektem:", originalEntry);
+          console.warn("Skipped entry which is not an object:", originalEntry);
           return null;
         }
         if (!(logDateColumn in originalEntry)) {
-          console.warn(`Wybrana kolumna daty "${logDateColumn}" nie znaleziona w wpisie. Pomijanie wpisu.`);
+          console.warn(`Selected date column "${logDateColumn}" not found in entry. Skipped entry.`);
           return null;
         }
         if (!(valueColumn in originalEntry)) {
-          console.warn(`Wybrana kolumna wartości "${valueColumn}" nie znaleziona w wpisie. Pomijanie wpisu.`);
+          console.warn(`Selected value column "${valueColumn}" not found in entry. Skipped entry.`);
           return null;
           }
 
@@ -166,18 +166,17 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
           <Button
             variant="light"
             size="sm"
-            onClick={() => { /* TODO: Implement rename logic if needed */ }}
             className="ms-2 d-flex align-items-center justify-content-center p-1"
             title="Zmień nazwę klucza (niezaimplementowane)"
           >
-            <PencilSquare size={16} />
+            <PencilSquare size={30} />
           </Button>
         </Modal.Title>
       </Modal.Header>
 
       <Modal.Body>
-        {isLoadingFile && <p>Ładowanie pliku...</p>}
-        {errorParsingFile && <p style={{ color: 'red' }}>Błąd: {errorParsingFile}</p>}
+        {isLoadingFile && <p>File loading...</p>}
+        {errorParsingFile && <p style={{ color: 'red' }}>Error: {errorParsingFile}</p>}
         {!isLoadingFile && !errorParsingFile && currentFileRawData && (
           <>
             <p>File: <strong>{currentFile?.name}</strong> ({currentFileIndex + 1} z {files.length})</p>
