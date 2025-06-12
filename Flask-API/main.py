@@ -1,6 +1,6 @@
 import sys
 from services.time_series_manager import TimeSeriesManager
-import services.metric_service as metric_service 
+import services.metric_service as metric_service
 
 from flask import Flask, jsonify, request
 
@@ -171,7 +171,6 @@ def add_timeseries():
         logger.error("Invalid data format: Expected a JSON object with keys as identifiers")
         return jsonify({"error": "Expected a JSON object with keys as identifiers"}), 400
 
-    timeseries_manager.clear_timeseries()
 
     for time, values in data.items():
         if not isinstance(values, dict):
@@ -185,7 +184,7 @@ def add_timeseries():
             logger.error(f"Error adding timeseries for time '{time}': {e}")
             timeseries_manager.clear_timeseries()
             return jsonify({"error": str(e)}), 400
-        
+
     # for key, timeseries_list in data.items():
     #     if not isinstance(timeseries_list, list):
     #         logger.error(f"Invalid data format for key '{key}': Expected a list")
@@ -197,7 +196,7 @@ def add_timeseries():
     #         logger.error(f"Error adding timeseries for key '{key}': {e}")
     #         timeseries_manager.clear_timeseries()
     #         return jsonify({"error": str(e)}), 400
-    
+
     return jsonify({"status": "Data uploaded" }), 201
 
 @app.route("/clear-timeseries", methods=["DELETE"])

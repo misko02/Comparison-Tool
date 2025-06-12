@@ -15,8 +15,8 @@ class TimeSeriesManager:
     def __init__(self):
         self.timeseries = {}
 
-    def add_timeseries(self, time, data):
-        
+    def add_timeseries(self, time: str, data: dict):
+
         """
         Add a timeseries to the manager.
 
