@@ -5,12 +5,14 @@ from statsmodels.tsa.stattools import acf, ccf
 from dtw import dtw  
 
 
-# --- Metryki dla pojedynczego szeregu czasowego ---
+# --- Metrics for single time series ---
 def calculate_basic_statistics(series: dict):
     """ 
-    Calulates basic descriptive statistics for a time series.
-    :param series: Timeseries (pd.Series).
-    :return: dictionary with four statistics: mean, median, variance, std_dev.
+    Calculates basic descriptive statistics for a time series.
+    Args:
+        series (dict): Timeseries
+    Returns:
+        dict: Dictionary with four statistics: mean, median, variance, std_dev.
     """
     if not series or not isinstance(series, dict):
         return {"mean": np.nan, "median": np.nan, "variance": np.nan, "std_dev": np.nan}
@@ -29,9 +31,11 @@ def calculate_basic_statistics(series: dict):
 def calculate_autocorrelation(series: dict, nlags: int = 20):
     """
     Calculates the autocorrelation function (ACF) for a time series.
-    :param series: Time series (pd.Series).
-    :param nlags: Maximum lag to compute ACF.
-    :return: Array of ACF values.
+    Args:
+        series (dict): Timeseries.
+        nlags (int): Maximum lag to compute ACF.
+    Returns:
+        np.ndarray: Array of ACF values.
     """
     if not series or not isinstance(series, dict):
         return np.array([])
@@ -47,8 +51,10 @@ def calculate_autocorrelation(series: dict, nlags: int = 20):
 def calculate_coefficient_of_variation(series: dict):
     """
     Calculates the coefficient of variation (CV).
-    :param series: Time series (pd.Series).
-    :return: Coefficient of variation.
+    Args:
+        series (dict): Timeseries.
+    Returns:
+        float: Coefficient of variation.
     """
     if not series or not isinstance(series, dict):
         return np.nan
@@ -63,8 +69,10 @@ def calculate_coefficient_of_variation(series: dict):
 def calculate_iqr(series: dict):
     """
     Calculates the interquartile range (IQR).
-    :param series: Time series (pd.Series).
-    :return: IQR value.
+    Args:
+        series (dict): Timeseries.
+    Returns:
+        float: IQR value.
     """
     if not series or not isinstance(series, dict):
         return np.nan
@@ -79,9 +87,11 @@ def calculate_iqr(series: dict):
 def calculate_pearson_correlation(series1: dict, series2: dict):
     """
     Calculates the Pearson correlation coefficient between two series.
-    :param series1: First time series (pd.Series).
-    :param series2: Second time series (pd.Series).
-    :return: Pearson correlation coefficient.
+    Args:
+        series1 (dict): First time series.
+        series2 (dict): Second time series.
+    Returns:
+        float: Pearson correlation coefficient.
     """
     if not series1 or not series2 or len(series1) != len(series2):
         return np.nan

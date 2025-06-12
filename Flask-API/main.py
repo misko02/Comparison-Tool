@@ -11,6 +11,7 @@ timeseries_manager = TimeSeriesManager()
 app = Flask(__name__)
 logger = app.logger
 
+
 @app.route("/timeseries", methods=["GET"])
 def get_timeseries():
     filename = request.args.get("filename")
@@ -82,6 +83,7 @@ def add_timeseries():
             logger.error(f"Error adding timeseries for time '{time}': {e}")
             timeseries_manager.clear_timeseries()
             return jsonify({"error": str(e)}), 400
+        
     # for key, timeseries_list in data.items():
     #     if not isinstance(timeseries_list, list):
     #         logger.error(f"Invalid data format for key '{key}': Expected a list")
@@ -93,6 +95,7 @@ def add_timeseries():
     #         logger.error(f"Error adding timeseries for key '{key}': {e}")
     #         timeseries_manager.clear_timeseries()
     #         return jsonify({"error": str(e)}), 400
+    
     return jsonify({"status": "Data uploaded" }), 201
 
 @app.route("/clear-timeseries", methods=["DELETE"])

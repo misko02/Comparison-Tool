@@ -3,8 +3,6 @@
 ## File Structure 
 ```
 |- interfaces – interfaces for application
-|- models – model classes for aplication
-    |- DTOs – records used for objects sent by and to API
 |- services – utility classes used as services in application
 |- tests – Unit tests
 | Dockerfile – Dockerfile to containerize APi
@@ -15,16 +13,27 @@
 ## Running Aplication
 You can run backend of application by simply typing `python3 main.py` in the terminal or run the whole application using `docker compose up --build`
 
+## Testing application
+To run unittests you have to type in commandline while being in API folder `python -m unittest -v ./tests/*.py`
+
 ## Endpoints
 ### GET:
-    /timeseries - Get all avaible timeseries
-    /timeseries/{key} - Get specified timeserie
+    /timeseries
+        Get all available timeseries
+
+    /timeseries?category&filename
+        Get values from specified category and file
+    
+    /timeseries/mean?category&filename
+        Get mean values for specified category in the file
 
 ### POST:
-    /upload-timeseries - Post new timeseries to list
+    /upload-timeseries 
+        Post new timeseries
 
 ### DELETE 
-    /clear-timeseries - Clear list of timeseries
+    /clear-timeseries
+        Clear list of timeseries
 
 ## Authors
 - Michał Bojara 

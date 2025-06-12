@@ -1,6 +1,3 @@
-from models.DTOs.timeserie_DTO import TimeserieDTO
-
-
 class TimeSeriesManager:
 
     """
