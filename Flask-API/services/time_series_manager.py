@@ -18,7 +18,7 @@ class TimeSeriesManager:
     def __init__(self):
         self.timeseries = {}
 
-    def add_timeseries(self, key, data):
+    def add_timeseries(self, time, data):
         
         """
         Add a timeseries to the manager.
@@ -35,35 +35,59 @@ class TimeSeriesManager:
         Returns:
             bool: True if added successfully, False otherwise
         """
-        
-        if isinstance(data, list):
-            self.timeseries[key] = data
-            for timeserie in data:
-                if not isinstance(timeserie, dict):
-                    raise ValueError(f"Invalid timeserie value: {timeserie}")
-                if not all(k in timeserie for k in ("log_date", "values", "id")):
-                    raise ValueError(f"Missing keys in timeserie: {timeserie}")
-                try:
-                    timeserie_model = TimeserieDTO.from_dict(timeserie)
-                except ValueError as e:
-                    raise ValueError(f"Invalid timeserie data: {timeserie}") from e
+        if isinstance(data, dict):
+            self.timeseries[time] = data
+            for time, categories in data.items():
+                if not isinstance(categories, dict):
+                    raise ValueError(f"Invalid category '{time}': {categories}")
+                for category, files in categories.items():
+                    if not isinstance(files, (float, int)):
+                        raise ValueError(f"Invalid file data for category '{category}': {files}")
             return True
         return False
+    
 
-    def get_timeseries(self, key=None):
-        
+        # if isinstance(data, list):
+        #     self.timeseries[key] = data
+        #     for timeserie in data:
+        #         if not isinstance(timeserie, dict):
+        #             raise ValueError(f"Invalid timeserie value: {timeserie}")
+        #         if not all(k in timeserie for k in ("log_date", "values", "id")):
+        #             raise ValueError(f"Missing keys in timeserie: {timeserie}")
+        #         try:
+        #             timeserie_model = TimeserieDTO.from_dict(timeserie)
+        #         except ValueError as e:
+        #             raise ValueError(f"Invalid timeserie data: {timeserie}") from e
+        #     return True
+        # return False
+
+    def get_timeseries(self, filename:str = None, category:str = None):
         """
         Retrieve timeseries data.
 
         Args:
-            key (str, optional): Identifier for the timeseries. Defaults to None.
-
+            filename (str, optional): The filename to filter timeseries by
+            category (str, optional): The category to filter timeseries by
         Returns:
-            dict: Timeseries data for the specified key or all timeseries if no key is provided
+            dict: Timeseries data for the specified time or all timeseries if no key is provided
         """
-        
-        if key:
-            return self.timeseries.get(key)
+
+        if filename and category:
+            timeserie = {}
+            if not self.timeseries:
+                raise ValueError("No timeseries data available")
+                
+            for time, timeseries in self.timeseries.items():
+                if not isinstance(timeseries, dict):
+                    raise ValueError(f"Invalid timeseries data for time '{time}': {timeseries}")
+                if not category in timeseries:
+                    raise ValueError(f"Category '{category}' not found in timeseries for time '{time}'")
+                if filename not in timeseries[category]:
+                    raise ValueError(f"Filename '{filename}' not found in category '{category}' for time '{time}'")
+                if not isinstance(timeseries[category][filename], (float, int)):
+                    raise ValueError(f"Invalid data for filename '{filename}' in category '{category}' for time '{time}': {timeseries[category][filename]}")
+                timeserie[time] = timeseries[category][filename]
+            return timeserie
         return self.timeseries
 
     def clear_timeseries(self):
