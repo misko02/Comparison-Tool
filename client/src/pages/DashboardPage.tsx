@@ -13,7 +13,9 @@ import {extractFilenamesPerCategory} from "../services/extractFilenamesPerCatego
 import {fetchAllMedians} from "../services/fetchAllMedians";
 import {fetchAllVariances} from "../services/fetchAllVariances";
 import {fetchAllStdDevs} from "../services/fetchAllStdDevs";
-import metrics from "../components/Metric/Metrics";
+import { Form } from 'react-bootstrap';
+
+
 
 function DashboardPage() {
   const [chartData, setChartData] = useState<Record<string, TimeSeriesEntry[]>>({});
@@ -27,7 +29,7 @@ function DashboardPage() {
   const [stdDevsValues, setStdDevsValues] = useState<Record<string, Record<string, number>>>({});
   const [filenamesPerCategory, setFilenamesPerCategory] = useState<Record<string, string[]>>({});
   const [dataPreview, setDataPreview] = useState<Record<string, any> | null>(null);
-
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const handleFetchData = useCallback(async (showLoadingIndicator = true) => {
   if (showLoadingIndicator) setIsLoading(true);
   setError(null);
@@ -113,6 +115,10 @@ function DashboardPage() {
       localStorage.setItem('filenamesPerCategory', JSON.stringify(filenamesPerCategory));
     }
   }, [meanValues, medianValues, varianceValues, stdDevsValues, filenamesPerCategory]);
+
+    const handleDropdownChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedCategory(event.target.value);
+  };
 
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -238,6 +244,27 @@ function DashboardPage() {
             <pre>{JSON.stringify(dataPreview, null, 2)}</pre>
           </div>
         )}
+        {Object.keys(filenamesPerCategory).length > 0 && (
+          <div className="d-flex flex-column align-items-center my-3">
+            <Form.Label htmlFor="category-select" className="mb-2">
+            Main Y-Axis
+            </Form.Label>
+            <Form.Select
+              id="category-select"
+              aria-label="Select category"
+              style={{ maxWidth: '300px' }}
+              onChange={handleDropdownChange}
+              value={selectedCategory || Object.keys(filenamesPerCategory)[0]}
+            >
+              {Object.keys(filenamesPerCategory).map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </Form.Select>
+          </div>
+        )}
+
 
         <Metrics 
           group_name={category}
