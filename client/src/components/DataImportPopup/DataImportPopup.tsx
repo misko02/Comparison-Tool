@@ -20,7 +20,7 @@ interface FileConfig {
 
 export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComplete }) => {
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
-  const [metricName, setMetricName] = useState('humidity'); // Główny klucz metryki
+  const [metricName, setMetricName] = useState(''); // Główny klucz metryki
 
   const [fileConfigs, setFileConfigs] = useState<Record<number, Partial<FileConfig>>>({});
 
@@ -30,7 +30,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
 
   const resetWizardState = () => {
     setCurrentFileIndex(0);
-    setMetricName('humidity');
+    setMetricName('');
     setFileConfigs({});
     setColumnOptions([]);
     setErrorParsingFile(null);
@@ -177,7 +177,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
                 type="text"
                 value={metricName}
                 onChange={(e) => setMetricName(e.target.value)}
-                placeholder="This will be the key for the nested values"
+                placeholder="This will be the name for the series of values"
             />
         </Form.Group>
         <hr />
