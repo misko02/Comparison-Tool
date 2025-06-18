@@ -30,6 +30,22 @@ function DashboardPage() {
   const [filenamesPerCategory, setFilenamesPerCategory] = useState<Record<string, string[]>>({});
   const [dataPreview, setDataPreview] = useState<Record<string, any> | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [filteredChartData, setFilteredChartData] = useState<Record<string, TimeSeriesEntry[]>>({});
+
+  useEffect(() => {
+    if (!selectedCategory) {
+      setFilteredChartData(chartData);
+      return;
+    }
+
+    const filtered: Record<string, TimeSeriesEntry[]> = {};
+    for (const [key, series] of Object.entries(chartData)) {
+      if (key.startsWith(`${selectedCategory}.`)) {
+        filtered[key] = series;
+      }
+    }
+    setFilteredChartData(filtered);
+  }, [chartData, selectedCategory]);
   const handleFetchData = useCallback(async (showLoadingIndicator = true) => {
   if (showLoadingIndicator) setIsLoading(true);
   setError(null);
@@ -90,6 +106,11 @@ function DashboardPage() {
       handleFetchData();
     }
   }, [handleFetchData]);
+useEffect(() => {
+  if (!selectedCategory && Object.keys(filenamesPerCategory).length > 0) {
+    setSelectedCategory(Object.keys(filenamesPerCategory)[0]);
+  }
+}, [filenamesPerCategory, selectedCategory]);
 
   useEffect(() => {
     if (Object.keys(chartData).length > 0) {
@@ -278,7 +299,7 @@ function DashboardPage() {
           )}
           {!isLoading && Object.keys(chartData).length > 0 && (
             <div className="chart-wrapper">
-              <MyChart data={chartData} title="Time Series Analysis" />
+              <MyChart data={filteredChartData} title="Time Series Analysis" />
             </div>
           )}
         </div>
