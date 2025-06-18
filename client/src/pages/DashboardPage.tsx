@@ -29,23 +29,18 @@ function DashboardPage() {
   const [stdDevsValues, setStdDevsValues] = useState<Record<string, Record<string, number>>>({});
   const [filenamesPerCategory, setFilenamesPerCategory] = useState<Record<string, string[]>>({});
   const [dataPreview, setDataPreview] = useState<Record<string, any> | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [filteredChartData, setFilteredChartData] = useState<Record<string, TimeSeriesEntry[]>>({});
-
-  useEffect(() => {
-    if (!selectedCategory) {
-      setFilteredChartData(chartData);
-      return;
-    }
-
-    const filtered: Record<string, TimeSeriesEntry[]> = {};
-    for (const [key, series] of Object.entries(chartData)) {
-      if (key.startsWith(`${selectedCategory}.`)) {
-        filtered[key] = series;
-      }
-    }
-    setFilteredChartData(filtered);
-  }, [chartData, selectedCategory]);
+  const [filteredData, setFilteredData] = useState<{
+  primary: Record<string, TimeSeriesEntry[]>;
+  secondary: Record<string, TimeSeriesEntry[]> | null;
+}>({ primary: {}, secondary: null });
+    const [selectedCategory, setSelectedCategory] = useState(() => {
+    const savedCategory = localStorage.getItem('selectedCategory');
+    return savedCategory ? savedCategory : null;
+  });
+      const [secondaryCategory, setSecondaryCategory] = useState(() => {
+    const savedCategory = localStorage.getItem('secondaryCategory');
+    return savedCategory ? savedCategory : null;
+  });
   const handleFetchData = useCallback(async (showLoadingIndicator = true) => {
   if (showLoadingIndicator) setIsLoading(true);
   setError(null);
@@ -67,6 +62,9 @@ function DashboardPage() {
 
     const stdDevs = await fetchAllStdDevs(names);
     setStdDevsValues(stdDevs);
+
+    setSelectedCategory(Object.keys(names)[0] || null);
+    setSecondaryCategory(null);
 
   } catch (err: any) {
     setError(err.message || 'Failed to fetch data.');
@@ -106,11 +104,51 @@ function DashboardPage() {
       handleFetchData();
     }
   }, [handleFetchData]);
-useEffect(() => {
-  if (!selectedCategory && Object.keys(filenamesPerCategory).length > 0) {
-    setSelectedCategory(Object.keys(filenamesPerCategory)[0]);
+ useEffect(() => {
+  const primary: Record<string, TimeSeriesEntry[]> = {};
+  const secondary: Record<string, TimeSeriesEntry[]> = {};
+  if (selectedCategory) {
+    for (const [key, series] of Object.entries(chartData)) {
+      if (key.startsWith(`${selectedCategory}.`)) {
+        primary[key] = series;
+      }
+    }
   }
-}, [filenamesPerCategory, selectedCategory]);
+
+
+  if (secondaryCategory ) {
+    for (const [key, series] of Object.entries(chartData)) {
+      if (key.startsWith(`${secondaryCategory}.`)) {
+        secondary[key] = series;
+      }
+    }
+  }
+
+  setFilteredData({
+    primary,
+    secondary: Object.keys(secondary).length > 0 ? secondary : null
+  });
+}, [chartData, selectedCategory, secondaryCategory]);
+
+    useEffect(() => {
+      if (Object.keys(filenamesPerCategory).length > 0 && !selectedCategory) {
+        setSelectedCategory(Object.keys(filenamesPerCategory)[0]);
+      }
+    }, [filenamesPerCategory, selectedCategory]);
+
+
+    useEffect(() => {
+    if (selectedCategory) {
+      localStorage.setItem('selectedCategory', selectedCategory);
+    }
+  }, [selectedCategory]);
+      useEffect(() => {
+    if (secondaryCategory) {
+      localStorage.setItem('secondaryCategory', secondaryCategory);}
+      else {
+      localStorage.removeItem('secondaryCategory');
+    }
+  }, [secondaryCategory]);
 
   useEffect(() => {
     if (Object.keys(chartData).length > 0) {
@@ -140,6 +178,10 @@ useEffect(() => {
     const handleDropdownChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedCategory(event.target.value);
   };
+  const handleSecondaryDropdownChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  setSecondaryCategory(event.target.value || null);
+};
+
 
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -272,13 +314,34 @@ useEffect(() => {
             </Form.Label>
             <Form.Select
               id="category-select"
-              aria-label="Select category"
+              aria-label="Main Y-axis group"
               style={{ maxWidth: '300px' }}
               onChange={handleDropdownChange}
               value={selectedCategory || Object.keys(filenamesPerCategory)[0]}
             >
               {Object.keys(filenamesPerCategory).map((cat) => (
-                <option key={cat} value={cat}>
+                <option key={cat} value={cat} disabled={cat == secondaryCategory}>
+                  {cat}
+                </option>
+              ))}
+            </Form.Select>
+          </div>
+        )}
+                {Object.keys(filenamesPerCategory).length > 0 && (
+          <div className="d-flex flex-column align-items-center my-3">
+            <Form.Label htmlFor="category-select" className="mb-2">
+            Second Y-Axis
+            </Form.Label>
+            <Form.Select
+              id="secondary-category-select"
+              aria-label="Second Y-axis group"
+              style={{ maxWidth: '300px' }}
+              onChange={handleSecondaryDropdownChange}
+              value={secondaryCategory || ''}
+            >
+              <option value="">-- None --</option>
+              {Object.keys(filenamesPerCategory).map((cat) => (
+                <option key={cat} value={cat} disabled={cat == selectedCategory}>
                   {cat}
                 </option>
               ))}
@@ -299,7 +362,11 @@ useEffect(() => {
           )}
           {!isLoading && Object.keys(chartData).length > 0 && (
             <div className="chart-wrapper">
-              <MyChart data={filteredChartData} title="Time Series Analysis" />
+              <MyChart 
+                primaryData={filteredData.primary}
+                secondaryData={filteredData.secondary || undefined}
+                title="Time Series Analysis"
+              />
             </div>
           )}
         </div>
