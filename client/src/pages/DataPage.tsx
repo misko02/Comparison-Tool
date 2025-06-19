@@ -87,7 +87,7 @@ const DataPage: React.FC = () => {
                 <button
                   key={file}
                   onClick={() => setSelectedTable(file)}
-                  className={`list-group-item list-group-item-action ${selectedTable === file ? 'list-group-item-primary' : ''}`}
+                  className={`list-group-item list-group-item-action ${selectedTable === file ? 'list-group-item-light' : ''}`}
                 >
                   {file}
                 </button>

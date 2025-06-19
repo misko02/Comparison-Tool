@@ -265,6 +265,12 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
     setEditingFileName(false);
   };
 
+  const cancelEditingFileName = () => {
+  setEditingFileName(false);
+  setTempFileName('');
+  setRenameError(null);
+};
+
   const groupAndTransformData = () => {
     const result: Record<string, any> = {};
     // Find date group
@@ -382,10 +388,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
                         isInvalid={!!renameError}
                       />
                       <Button size="sm" variant="success" onClick={handleRenameFile}>✓</Button>
-                      <Button size="sm" variant="outline-secondary" onClick={() => {
-                        setEditingFileName(false);
-                        setRenameError(null);
-                      }}>✕</Button>
+                      <Button size="sm" variant="outline-secondary" onClick={cancelEditingFileName}>✕</Button>
                       {renameError && (
                         <Form.Control.Feedback type="invalid" style={{ position: 'static', display: 'block', marginTop: '5px' }}>
                           {renameError}
@@ -518,23 +521,25 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
       </Modal.Body>
 
       <Modal.Footer>
+      {!(currentStep === 'file-preview' && currentFileIndex === 0) && (
         <Button variant="secondary" onClick={handleBack}>
           Back
         </Button>
-        <Button
-          variant="primary"
-          onClick={currentStep === 'file-preview' ? handleNextFilePreview : handleFinish}
-          disabled={
-            currentStep === 'file-preview'
-              ? isLoadingFile || !!errorParsingFile || !!renameError
-              : false
-          }
-        >
-          {currentStep === 'file-preview'
-            ? currentFileIndex < files.length - 1 ? 'Next File' : 'Configure Columns'
-            : 'Finish & Process Data'}
-        </Button>
-      </Modal.Footer>
+      )}
+      <Button
+        variant="primary"
+        onClick={currentStep === 'file-preview' ? handleNextFilePreview : handleFinish}
+        disabled={
+          currentStep === 'file-preview'
+            ? isLoadingFile || !!errorParsingFile || !!renameError
+            : false
+        }
+      >
+        {currentStep === 'file-preview'
+          ? currentFileIndex < files.length - 1 ? 'Next File' : 'Configure Columns'
+          : 'Finish & Process Data'}
+      </Button>
+    </Modal.Footer>
     </Modal>
   );
 };
