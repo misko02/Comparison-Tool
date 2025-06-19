@@ -1,5 +1,5 @@
 import React from 'react';
-import { Accordion, Form } from 'react-bootstrap';
+import { Accordion } from 'react-bootstrap';
 import './Dropdown.css';
 
 type DropdownProps = {
@@ -10,22 +10,22 @@ type DropdownProps = {
 
 const Dropdown: React.FC<DropdownProps> = ({ category, files, onFileClick }) => {
   return (
-    <Accordion className="file-accordion" style={{ width: '100%' }}>
-      <Accordion.Item eventKey="0" style={{ width: '100%' }}>
+    <Accordion className="file-accordion">
+      <Accordion.Item eventKey="0" >
         <Accordion.Header className="accordion-header">
           {category}
         </Accordion.Header>
-        <Accordion.Body className="accordion-content">
-          <div className="accordion-layout">
+        <Accordion.Body className="accordion-content" >
+          <div className="accordion-layout" >
             {files.map((file, index) => (
-              <Form.Check
+              <div 
                 key={index}
-                type="switch"
-                id={`custom-switch-${index}`}
-                label={file}
-                onChange={() => onFileClick?.(file)}
-                className="switch"
-              />
+                className="file-label"
+                onClick={() => onFileClick?.(file)}
+
+              >
+                {file}
+              </div>
             ))}
           </div>
         </Accordion.Body>

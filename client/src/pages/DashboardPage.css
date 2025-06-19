@@ -24,6 +24,12 @@ body{
   gap:16px
 
 }
+.App-inside-content{
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%}
+
 
 .App-header {
   background-color: #282c34;
@@ -62,7 +68,13 @@ button:hover,
 .custom-file-upload:hover {
   background-color: #0056b3;
 }
-
+.header{
+  display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 20px
+}
 .group-menu {
 display: flex;
 width: 256px;

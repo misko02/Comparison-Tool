@@ -1,42 +1,41 @@
-/* Główny kontener - wymusza pełną szerokość */
 .file-accordion {
   width: 100%;
+  max-width: 100%; 
 }
 
-/* Nagłówek Accordion - stała szerokość */
 .accordion-header {
   width: 100%;
   padding: 8px 10px;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 4px
 }
 
-/* Zawartość Accordion - taka sama szerokość jak nagłówek */
 .accordion-content {
   width: 100%;
   padding: 16px 20px;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
-/* Kontener wewnątrz Accordion.Body */
 .accordion-layout {
   width: 100%;
+  box-sizing: border-box; 
 }
 
-/* Switch - pełna szerokość */
-.switch {
+.file-label {
   width: 100%;
-  height: auto;
-  display: flex;
-  align-items: center;
-  min-height: 32px;
-}
-
-.switch .form-check-label {
+  padding: 8px 0;
+  cursor: pointer;
   white-space: normal;
   word-break: break-word;
-  flex-grow: 1;
-  padding-right: 8px;
+  overflow-wrap: break-word;
+  display: block;
+  box-sizing: border-box; 
+  overflow: hidden; 
+}
+
+.file-label:hover {
+  background-color: #f5f5f5;
 }

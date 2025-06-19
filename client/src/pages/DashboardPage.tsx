@@ -286,15 +286,8 @@ function DashboardPage() {
 return (
   <div className="App">
     <main className="App-main-content">
-      <div style={{  display: 'flex',
-  flexDirection: 'column',
-  gap: '16px',width: '100%'}}>
-      <div style={{display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        width: '100%',
-        marginBottom: '20px'
-      }}>
+      <div className="App-inside-content">
+      <div className="header">
         <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
           {Object.keys(filenamesPerCategory).length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
