@@ -26,15 +26,16 @@ function DashboardPage() {
   const [medianValues, setMedianValues] = useState<Record<string, Record<string, number>>>({});
   const [varianceValues, setVarianceValues] = useState<Record<string, Record<string, number>>>({});
   const [stdDevsValues, setStdDevsValues] = useState<Record<string, Record<string, number>>>({});
+  const [filenamesPerCategory, setFilenamesPerCategory] = useState<Record<string, string[]>>({});
+  const [dataPreview, setDataPreview] = useState<Record<string, any> | null>(null);
   const [autoCorrelationValues, setAutoCorrelationValues] = useState<Record<string, Record<string, number>>>({});
-const [filenamesPerCategory, setFilenamesPerCategory] = useState<Record<string, string[]>>({});
 
   const handleFetchData = useCallback(async (showLoadingIndicator = true) => {
-    if (showLoadingIndicator) setIsLoading(true);
-    setError(null);
-    try {
-      const allSeries = await fetchTimeSeriesData();
-      setChartData(allSeries);
+  if (showLoadingIndicator) setIsLoading(true);
+  setError(null);
+  try {
+    const allSeries = await fetchTimeSeriesData();
+    setChartData(allSeries);
 
     const names = extractFilenamesPerCategory(allSeries);
     setFilenamesPerCategory(names);
@@ -50,6 +51,7 @@ const [filenamesPerCategory, setFilenamesPerCategory] = useState<Record<string, 
 
     const stdDevs = await fetchAllStdDevs(names);
     setStdDevsValues(stdDevs);
+
 
     const autoCorrelations = await fetchAllAutoCorrelations(names);
     setAutoCorrelationValues(autoCorrelations);
@@ -102,7 +104,7 @@ const [filenamesPerCategory, setFilenamesPerCategory] = useState<Record<string, 
   }, [chartData]);
 
   useEffect(() => {
-    // Zapisujemy metryki, tylko jeśli nie są puste
+        // Zapisujemy metryki, tylko jeśli nie są puste
     if (Object.keys(meanValues).length > 0) {
       localStorage.setItem('meanValues', JSON.stringify(meanValues));
     }
@@ -135,13 +137,21 @@ const [filenamesPerCategory, setFilenamesPerCategory] = useState<Record<string, 
     event.target.value = '';
   };
 
-const handlePopupComplete = async (processedData: Record<string, any[]>) => {
+ const handlePopupComplete = async (groupedData: Record<string, any>) => {
   setIsPopupOpen(false); // Zamknij popup najpierw
+  
+  // Show preview of the first 3 entries
+  const previewDates = Object.keys(groupedData).slice(0, 3);
+  const preview: Record<string, any> = {};
+  previewDates.forEach(date => {
+    preview[date] = groupedData[date];
+  });
+  setDataPreview(preview);
 
-  if (Object.keys(processedData).length > 0) {
+  if (Object.keys(groupedData).length > 0) {
     setIsLoading(true);
     setError(null);
-    await sendProcessedTimeSeriesData(processedData, async (success) => {
+    await sendProcessedTimeSeriesData(groupedData, async (success) => {
       if (!success) {
         setError("Przetwarzanie danych lub wysyłanie na serwer nie powiodło się.");
       } else {
@@ -160,7 +170,7 @@ const handlePopupComplete = async (processedData: Record<string, any[]>) => {
     setSelectedFiles([]);
   };
 
-    const handleReset = async () => {
+  const handleReset = async () => {
     setIsLoading(true); // Pokaż wskaźnik ładowania podczas resetowania
     setError(null);
     setChartData({}); // Wyczyść dane na wykresie
@@ -170,9 +180,10 @@ const handlePopupComplete = async (processedData: Record<string, any[]>) => {
     setStdDevsValues({});
     setAutoCorrelationValues({});
     setFilenamesPerCategory({}); // Wyczyść kategorie plików
-      localStorage.removeItem('chartData');
+    setDataPreview(null);
+    localStorage.removeItem('chartData');
 
-    try {
+     try {
       const resp = await fetch('/clear-timeseries', { method: 'DELETE' });
       if (!resp.ok) {
         const errorText = await resp.text();
@@ -205,7 +216,7 @@ const handlePopupComplete = async (processedData: Record<string, any[]>) => {
     const stdDev = stdDevsValues[category]?.[metricName];
     const autoCorrelation = autoCorrelationValues[category]?.[metricName];
 
-    return {
+       return {
       id: metricName,
       name: metricName,
       mean: mean,
@@ -237,6 +248,13 @@ const handlePopupComplete = async (processedData: Record<string, any[]>) => {
 
         {error && <p className="App-error" style={{ color: 'red', textAlign: 'center' }}>Error: {error}</p>}
 
+        {dataPreview && (
+          <div className="data-preview">
+            <h3>Data Preview (first 3 entries)</h3>
+            <pre>{JSON.stringify(dataPreview, null, 2)}</pre>
+          </div>
+        )}
+
         <div className="Chart-container">
           {isLoading && Object.keys(chartData).length === 0 && <p style={{ textAlign: 'center', padding: '30px' }}>Loading chart...</p>}
           {!isLoading && Object.keys(chartData).length === 0 && !error && (
@@ -248,10 +266,12 @@ const handlePopupComplete = async (processedData: Record<string, any[]>) => {
             </div>
           )}
         </div>
+
           <Metrics group_name={category}
                    metrics={combinedMetrics}
                      />
         <a
+
           className="App-link"
           href="https://github.com/misko02/Comparison-Tool"
           target="_blank"
@@ -261,12 +281,12 @@ const handlePopupComplete = async (processedData: Record<string, any[]>) => {
         </a>
 
         <DataImportPopup
-            show={isPopupOpen}
-            onHide={handlePopupClose}
-            files={selectedFiles}
-            onComplete={handlePopupComplete}
+          show={isPopupOpen}
+          onHide={handlePopupClose}
+          files={selectedFiles}
+          onComplete={handlePopupComplete}
         />
-                   <button
+        <button
               onClick={handleReset}
               className="custom-reset-button"
               disabled={isLoading}
