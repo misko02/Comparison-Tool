@@ -98,19 +98,18 @@ def get_standard_deviation():
 def get_autocorrelation():
     filename = request.args.get("filename")
     category = request.args.get("category")
-    nlags = request.args.get("nlags", default=20, type=int)
     try:
         data = timeseries_manager.get_timeseries(filename, category)
-        acf_values = metric_service.calculate_autocorrelation(data, nlags)
+        acf_value = metric_service.calculate_autocorrelation(data)
     except Exception as e:
         logger.error(f"Error calculating autocorrelation for filename '{filename}' and category '{category}': {e}")
         return jsonify({"error": str(e)}), 400
-    if acf_values is None or len(acf_values) == 0:
+    if acf_value is None:
         logger.warning(f"No valid timeseries data provided for autocorrelation calculation for filename '{filename}' and category '{category}'")
         return jsonify({"error": "No valid timeseries data provided"}), 400
     logger.info(f"Successfully calculated autocorrelation for provided timeseries data for filename '{filename}' and category '{category}'")
 
-    return jsonify({"autocorrelation": acf_values.tolist()}), 200
+    return jsonify({"autocorrelation": acf_value}), 200
 
 @app.route("/timeseries/coefficient_of_variation", methods=["GET"])
 def get_coefficient_of_variation():
@@ -171,6 +170,7 @@ def add_timeseries():
         logger.error("Invalid data format: Expected a JSON object with keys as identifiers")
         return jsonify({"error": "Expected a JSON object with keys as identifiers"}), 400
 
+    timeseries_manager.clear_timeseries()
 
     for time, values in data.items():
         if not isinstance(values, dict):

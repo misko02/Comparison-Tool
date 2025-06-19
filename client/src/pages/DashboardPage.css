@@ -60,12 +60,3 @@ button:hover,
 .custom-file-upload:hover {
   background-color: #0056b3;
 }
-
-.chart-wrapper {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center; /* opcjonalnie, jeśli chcesz też centrować w pionie */
-  width: 100%;
-  margin-bottom: 40px; /* opcjonalnie */
-}

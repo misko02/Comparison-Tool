@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
-import { PencilSquare } from 'react-bootstrap-icons';
 import { DataTable } from '../DataTable/DataTable';
 
 interface Props {
@@ -21,7 +20,7 @@ interface FileConfig {
 
 export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComplete }) => {
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
-  const [metricName, setMetricName] = useState('humidity'); // Główny klucz metryki
+  const [metricName, setMetricName] = useState(''); // Główny klucz metryki
 
   const [fileConfigs, setFileConfigs] = useState<Record<number, Partial<FileConfig>>>({});
 
@@ -31,7 +30,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
 
   const resetWizardState = () => {
     setCurrentFileIndex(0);
-    setMetricName('humidity');
+    setMetricName('');
     setFileConfigs({});
     setColumnOptions([]);
     setErrorParsingFile(null);
@@ -173,12 +172,12 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
 
       <Modal.Body>
         <Form.Group className="mb-4">
-            <Form.Label className="fw-bold">1. Define Metric Group Name (e.g., humidity, temperature)</Form.Label>
+            <Form.Label className="fw-bold">1. Define group name (e.g., humidity, temperature)</Form.Label>
             <Form.Control
                 type="text"
                 value={metricName}
                 onChange={(e) => setMetricName(e.target.value)}
-                placeholder="This will be the key for the nested values"
+                placeholder="This will be the name for the series of values"
             />
         </Form.Group>
         <hr />
@@ -209,7 +208,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
               </Form.Group>
 
               <Form.Group>
-                <Form.Label>Value Key Name (in final merged data)</Form.Label>
+                <Form.Label>Value Name</Form.Label>
                 <Form.Control
                     type="text"
                     value={currentConfig.valueKey || ''}

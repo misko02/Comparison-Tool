@@ -15,6 +15,21 @@ export const MyChart: React.FC<MyChartProps> = ({data, title}) => {
     const [customYMin, setCustomYMin] = useState<string>('');
     const [customYMax, setCustomYMax] = useState<string>('');
 
+    useEffect(() => { // ten hook pozwala na dynamiczny zakres osi X od razu po załadowaniu danych, bez niego najpierw trzeba odświeżyć stronę
+    const allXValues = Object.values(data).flat().map(d => new Date(d.x));
+    if (allXValues.length === 0) return;
+
+    const minDate = new Date(Math.min(...allXValues.map(d => d.getTime())));
+    const maxDate = new Date(Math.max(...allXValues.map(d => d.getTime())));
+
+    const fakeEvent = {
+        'xaxis.range[0]': minDate.toISOString(),
+        'xaxis.range[1]': maxDate.toISOString(),
+    };
+
+    handleRelayout(fakeEvent);
+}, [data]);
+
     const handleRelayout = (event: any) => {
         if (event['xaxis.range[0]'] && event['xaxis.range[1]']) {
             const rangeStart = new Date(event['xaxis.range[0]']);

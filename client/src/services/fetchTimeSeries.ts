@@ -17,16 +17,16 @@ export const fetchTimeSeriesData = async (): Promise<TimeSeriesResponse> => {
   for (const [timestamp, timestampData] of Object.entries(json)) {
     if (typeof timestampData !== 'object' || timestampData === null) continue;
 
-    // Iterujemy po metrykach w danym punkcie czasowym (np. "humidity", "temperature").
-    for (const [metricName, seriesData] of Object.entries(timestampData)) {
+    // Iterujemy po grupach w danym punkcie czasowym (np. "humidity", "temperature").
+    for (const [groupName, seriesData] of Object.entries(timestampData)) {
       if (typeof seriesData !== 'object' || seriesData === null) continue;
 
-      // Iterujemy po konkretnych seriach danych dla danej metryki.
+      // Iterujemy po konkretnych seriach danych dla danej grupy.
       for (const [seriesName, value] of Object.entries(seriesData)) {
         if (typeof value !== 'number') continue;
 
-        // Tworzymy unikalny, złożony klucz dla serii danych, np. "humidity.data_extended_updated_minus30 (1)".
-        const compositeKey = `${metricName}.${seriesName}`;
+        // Tworzymy unikalny, złożony klucz dla serii danych, np. "humidity.data_1".
+        const compositeKey = `${groupName}.${seriesName}`;
 
         // Jeśli tablica dla tego klucza jeszcze nie istnieje w wynikowym obiekcie, tworzymy ją.
         if (!out[compositeKey]) {
@@ -42,8 +42,7 @@ export const fetchTimeSeriesData = async (): Promise<TimeSeriesResponse> => {
     }
   }
 
-  // Opcjonalnie: można posortować każdą serię danych po dacie, chociaż dane z serwera
-  // prawdopodobnie już są posortowane.
+
   for (const key in out) {
       out[key].sort((a, b) => new Date(a.x).getTime() - new Date(b.x).getTime());
   }
