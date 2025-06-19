@@ -1,11 +1,11 @@
 // src/components/DataTable/DataTable.tsx
 import React from 'react';
-import { TimeSeriesEntry } from '@/services/fetchTimeSeries';
 
-interface DataTableProps {
-  data: TimeSeriesEntry[];
+export interface DataTableProps {
+  data: Record<string, string | number>[];
   title: string;
 }
+
 
 export const DataTable: React.FC<DataTableProps> = ({ data, title }) => {
   // Bierzemy maks 20 rekordów
@@ -26,8 +26,10 @@ export const DataTable: React.FC<DataTableProps> = ({ data, title }) => {
         <div>No data to display</div>
       ) : (
         <div className="table-responsive">
-          <table className="table table-striped table-bordered table-hover align-middle">
-            <thead className="table-primary">
+
+          <table className="table table-borderless table-hover align-middle">
+            <thead className="table-light">
+
               <tr>
                 {columns.map((col) => (
                   <th key={col} scope="col">

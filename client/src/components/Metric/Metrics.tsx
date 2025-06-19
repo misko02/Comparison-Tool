@@ -8,6 +8,7 @@ export type CombinedMetric = {
   median?: number;
   variance?: number;
   stdDev?: number;
+  autoCorrelation?: number;
 };
 
 interface MetricsProps {
@@ -51,6 +52,11 @@ return (
                         {metric.stdDev !== undefined && (
                            <p>
                                Standard deviation: <strong>{metric.stdDev.toFixed(2)}</strong>
+                           </p>
+                        )}
+                        {metric.autoCorrelation !== undefined && (
+                           <p>
+                               Autocorrelation: <strong>{metric.autoCorrelation.toFixed(2)}</strong>
                            </p>
                         )}
                     </div>

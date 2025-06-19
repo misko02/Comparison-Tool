@@ -9,6 +9,8 @@ interface FileConfig {
   rawData: any[];
 }
 
+
+
 interface Group {
   id: string;
   name: string;
@@ -19,11 +21,12 @@ interface Props {
   show: boolean;
   files: File[];
   onHide: () => void;
-   // Zmieniamy typ, aby odzwierciedlał, że otrzymujemy jeden obiekt
+         // Zmieniamy typ, aby odzwierciedlał, że otrzymujemy jeden obiekt
   onComplete: (groupedData: Record<string, any>) => void;
 }
 
 export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComplete }) => {
+  const [metricName, setMetricName] = useState(''); // Główny klucz metryki
   const [currentStep, setCurrentStep] = useState<'file-preview' | 'column-config'>('file-preview');
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
   const [fileConfigs, setFileConfigs] = useState<Record<string, FileConfig>>({});
@@ -31,15 +34,32 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
   const [isLoadingFile, setIsLoadingFile] = useState(false);
   const [errorParsingFile, setErrorParsingFile] = useState<string | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
-  const [mainGroupName, setMainGroupName] = useState('measurements');
+  const [renamedFiles, setRenamedFiles] = useState<Record<string, string>>({});
+  const [editingFileName, setEditingFileName] = useState<boolean>(false);
+  const [tempFileName, setTempFileName] = useState<string>('');
+  const [renameError, setRenameError] = useState<string | null>(null);
+  const [editingGroupName, setEditingGroupName] = useState<string | null>(null);
+  const [tempGroupName, setTempGroupName] = useState<string>('');
+  const [groupCounter, setGroupCounter] = useState(1); // Counter for default group names
+  const [groupNameError, setGroupNameError] = useState<string | null>(null);
+
 
   const resetState = () => {
     setCurrentStep('file-preview');
     setCurrentFileIndex(0);
+
+    setMetricName('');
+
     setFileConfigs({});
     setColumnOptions([]);
     setErrorParsingFile(null);
     setGroups([]);
+    setRenamedFiles({});
+    setEditingGroupName(null);
+    setTempGroupName('');
+    setGroupCounter(1);
+    setGroupNameError(null);
+
   };
 
   const loadFileForConfiguration = useCallback(async (fileIndex: number) => {
@@ -48,7 +68,8 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
     setIsLoadingFile(true);
     setErrorParsingFile(null);
     const file = files[fileIndex];
-    const fileKey = file.name.replace(/\.json$/i, '');
+    const fileKey = getFileKey(file);
+
 
     if (fileConfigs[fileKey]?.rawData) {
       const firstEntry = fileConfigs[fileKey].rawData[0];
@@ -99,6 +120,9 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
 
   useEffect(() => {
     if (show && files.length > 0 && currentStep === 'file-preview') {
+
+      setRenameError(null);
+      setEditingFileName(false); 
       loadFileForConfiguration(currentFileIndex);
     }
   }, [show, files.length, currentFileIndex, currentStep, loadFileForConfiguration]);
@@ -106,15 +130,11 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
   const handleNextFilePreview = () => {
     if (currentFileIndex < files.length - 1) {
       setCurrentFileIndex(currentFileIndex + 1);
+      setEditingFileName(false); 
     } else {
       setCurrentStep('column-config');
-      // Initialize groups when moving to column config
       const fileKeys = Object.keys(fileConfigs);
       if (fileKeys.length > 0) {
-        const firstFileKey = fileKeys[0];
-        const columns = Object.keys(fileConfigs[firstFileKey].rawData[0]);
-        
-        // Create default groups for date and value
         setGroups([
           {
             id: 'date',
@@ -136,35 +156,133 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
       setCurrentStep('file-preview');
     } else if (currentFileIndex > 0) {
       setCurrentFileIndex(currentFileIndex - 1);
+      setEditingFileName(false); 
     }
   };
 
   const addNewGroup = () => {
-    const newGroup: Group = {
-      id: `group-${Date.now()}`,
-      name: '',
-      fileMappings: Object.fromEntries(Object.keys(fileConfigs).map(key => [key, ''])),
-    };
-    setGroups([...groups, newGroup]);
+    const newGroupName = `Group${groupCounter}`;
+    setGroupCounter(prev => prev + 1);
+    
+    setGroups(prev => [
+      ...prev,
+      {
+        id: `group-${Date.now()}`,
+        name: newGroupName,
+        fileMappings: Object.fromEntries(Object.keys(fileConfigs).map(key => [key, 'none']))
+      }
+    ]);
+  };
+
+  const removeGroup = (groupId: string) => {
+    setGroups(groups.filter(group => group.id !== groupId));
   };
 
   const updateGroupMapping = (groupId: string, fileKey: string, column: string) => {
-    setGroups(groups.map(group => 
-      group.id === groupId 
-        ? { ...group, fileMappings: { ...group.fileMappings, [fileKey]: column } } 
+    setGroups(groups.map(group =>
+      group.id === groupId
+        ? { ...group, fileMappings: { ...group.fileMappings, [fileKey]: column } }
         : group
     ));
   };
 
   const updateGroupName = (groupId: string, name: string) => {
-    setGroups(groups.map(group => 
+    setGroups(groups.map(group =>
       group.id === groupId ? { ...group, name } : group
     ));
   };
 
+  const startEditingGroupName = (groupId: string, currentName: string) => {
+    setEditingGroupName(groupId);
+    setTempGroupName(currentName);
+    setGroupNameError(null);
+  };
+
+  const saveGroupName = (groupId: string) => {
+    const trimmedName = tempGroupName.trim();
+    
+    if (!trimmedName) {
+      setGroupNameError('Group name cannot be empty');
+      return;
+    }
+
+    // Check if the name is already used by another group
+    const nameExists = groups.some(
+      group => group.id !== groupId && group.name.toLowerCase() === trimmedName.toLowerCase()
+    );
+
+    if (nameExists) {
+      setGroupNameError('A group with this name already exists');
+      return;
+    }
+
+    updateGroupName(groupId, trimmedName);
+    setEditingGroupName(null);
+    setTempGroupName('');
+    setGroupNameError(null);
+  };
+
+  const cancelEditingGroupName = () => {
+    setEditingGroupName(null);
+    setTempGroupName('');
+    setGroupNameError(null);
+  };
+
+  const handleRenameFile = () => {
+    const originalKey = currentFile.name.replace(/\.json$/i, '');
+    const newKey = tempFileName.trim();
+    setRenameError(null);
+
+    const currentDisplayName = getFileKey(currentFile);
+    if (!newKey || newKey === currentDisplayName) {
+      setEditingFileName(false);
+      return;
+    }
+
+    if (fileConfigs[newKey]) {
+      setRenameError(`File name "${newKey}" already exists`);
+      return;
+    }
+
+    setFileConfigs(prev => {
+      const { [originalKey]: config, ...rest } = prev;
+      return { ...rest, [newKey]: config };
+    });
+
+    setGroups(prevGroups =>
+      prevGroups.map(group => {
+        const originalMapping = group.fileMappings[originalKey];
+        const { [originalKey]: _, ...otherMappings } = group.fileMappings;
+        return {
+          ...group,
+          fileMappings: {
+            ...otherMappings,
+            [newKey]: originalMapping
+          }
+        };
+      })
+    );
+
+    setRenamedFiles(prev => ({ 
+      ...prev, 
+      [originalKey]: newKey,
+      ...Object.fromEntries(
+        Object.entries(prev)
+          .filter(([_, value]) => value !== originalKey)
+      )
+    }));
+    
+    setEditingFileName(false);
+  };
+
+  const cancelEditingFileName = () => {
+  setEditingFileName(false);
+  setTempFileName('');
+  setRenameError(null);
+};
+
   const groupAndTransformData = () => {
     const result: Record<string, any> = {};
-
     // Find date group
     const dateGroup = groups.find(g => g.id === 'date');
     if (!dateGroup) return result;
@@ -194,7 +312,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
           if (group.id === 'date') return;
 
           const column = group.fileMappings[fileKey];
-          if (!column || row[column] === undefined) return;
+          if (!column || column === 'none' || row[column] === undefined) return;
 
           // Use group name as the main category
           if (!result[isoDateString][group.name]) {
@@ -211,21 +329,55 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
   };
 
   const handleFinish = () => {
+    // Validate that all groups have names
+    const unnamedGroups = groups.filter(group => !group.name.trim());
+    if (unnamedGroups.length > 0) {
+      alert('Please provide names for all groups before finishing.');
+      return;
+    }
+
+    // Check for duplicate group names
+    const groupNames = groups.map(group => group.name.toLowerCase());
+    const uniqueNames = new Set(groupNames);
+    if (groupNames.length !== uniqueNames.size) {
+      alert('Please ensure all group names are unique before finishing.');
+      return;
+    }
+
     const groupedData = groupAndTransformData();
     onComplete(groupedData);
     onHide();
   };
 
+  // Get all selected columns for a specific file across all groups
+  const getUsedColumnsForFile = (fileKey: string) => {
+    const usedColumns = new Set<string>();
+    groups.forEach(group => {
+      const column = group.fileMappings[fileKey];
+      if (column && column !== 'none') {
+        usedColumns.add(column);
+      }
+    });
+    return Array.from(usedColumns);
+  };
+
   const currentFile = files[currentFileIndex];
-  const currentFileKey = currentFile?.name.replace(/\.json$/i, '');
+  const getFileKey = (file?: File) => {
+    if (!file) return '';
+    const originalKey = file.name.replace(/\.json$/i, '');
+    return renamedFiles[originalKey] || originalKey;
+  };
+  const currentFileKey = getFileKey(currentFile);
   const currentConfig = currentFileKey ? fileConfigs[currentFileKey] : null;
 
   return (
     <Modal show={show} onHide={onHide} backdrop="static" keyboard={false} size="xl" centered scrollable>
       <Modal.Header closeButton>
         <Modal.Title className="ms-2 d-flex align-items-center">
-          {currentStep === 'file-preview' 
-            ? `File Preview (${currentFileIndex + 1}/${files.length})` 
+
+          {currentStep === 'file-preview'
+            ? `File Preview (${currentFileIndex + 1}/${files.length})`
+
             : 'Configure Columns'}
         </Modal.Title>
       </Modal.Header>
@@ -234,13 +386,52 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
         {currentStep === 'file-preview' ? (
           <>
             <Form.Group className="mb-4">
-              <Form.Label className="fw-bold">File: {currentFile?.name}</Form.Label>
+
+              <Form.Label className="fw-bold d-flex align-items-center gap-2">
+                File:
+                {currentFile ? (
+                  editingFileName ? (
+                    <>
+                      <Form.Control
+                        type="text"
+                        size="sm"
+                        value={tempFileName}
+                        onChange={(e) => setTempFileName(e.target.value)}
+                        style={{ maxWidth: '200px' }}
+                        isInvalid={!!renameError}
+                      />
+                      <Button size="sm" variant="success" onClick={handleRenameFile}>✓</Button>
+                      <Button size="sm" variant="outline-secondary" onClick={cancelEditingFileName}>✕</Button>
+                      {renameError && (
+                        <Form.Control.Feedback type="invalid" style={{ position: 'static', display: 'block', marginTop: '5px' }}>
+                          {renameError}
+                        </Form.Control.Feedback>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <span className="fw-normal">{getFileKey(currentFile)}</span>
+                      <Button size="sm" variant="outline-primary" onClick={() => {
+                        setTempFileName(getFileKey(currentFile));
+                        setEditingFileName(true);
+                        setRenameError(null);
+                      }}>
+                        Rename
+                      </Button>
+                    </>
+                  )
+                ) : (
+                  <span className="fw-normal text-muted">No file loaded</span>
+                )}
+              </Form.Label>
             </Form.Group>
 
             {isLoadingFile && <p>Loading file...</p>}
             {errorParsingFile && <p style={{ color: 'red' }}>Error: {errorParsingFile}</p>}
 
-            {!isLoadingFile && !errorParsingFile && currentConfig?.rawData && (
+
+            {!isLoadingFile && currentConfig?.rawData && (
+
               <div className="mt-4">
                 <DataTable data={currentConfig.rawData.slice(0, 5)} title="File Preview" />
               </div>
@@ -248,44 +439,90 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
           </>
         ) : (
           <>
-            <Form.Group className="mb-4">
-              <Form.Label className="fw-bold">Main Group Name</Form.Label>
-              <Form.Control
-                type="text"
-                value={mainGroupName}
-                onChange={(e) => setMainGroupName(e.target.value)}
-                placeholder="e.g. measurements, sensors"
-              />
-            </Form.Group>
-
             <h5>Data Groups</h5>
             {groups.map((group) => (
               <div key={group.id} className="mb-4 p-3 border rounded">
                 <Form.Group className="mb-3">
                   <Form.Label>Group Name</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={group.name}
-                    onChange={(e) => updateGroupName(group.id, e.target.value)}
-                    disabled={group.id === 'date' || group.id === 'value'}
-                  />
+
+                  <div className="d-flex align-items-center gap-2">
+                    {editingGroupName === group.id ? (
+                      <>
+                        <Form.Control
+                          type="text"
+                          value={tempGroupName}
+                          onChange={(e) => setTempGroupName(e.target.value)}
+                          autoFocus
+                          isInvalid={!!groupNameError}
+                        />
+                        <Button size="sm" variant="success" onClick={() => saveGroupName(group.id)}>✓</Button>
+                        <Button size="sm" variant="outline-secondary" onClick={cancelEditingGroupName}>✕</Button>
+                        {groupNameError && (
+                          <Form.Control.Feedback type="invalid" style={{ position: 'static', display: 'block', marginTop: '5px' }}>
+                            {groupNameError}
+                          </Form.Control.Feedback>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <span>{group.name}</span>
+                        {group.id !== 'date' && (
+                          <>
+                            <Button 
+                              size="sm" 
+                              variant="outline-primary" 
+                              onClick={() => startEditingGroupName(group.id, group.name)}
+                            >
+                              Rename
+                            </Button>
+                            {group.id !== 'value' && (
+                              <Button 
+                                size="sm" 
+                                variant="outline-danger" 
+                                onClick={() => removeGroup(group.id)}
+                                className="ms-2"
+                              >
+                                Remove
+                              </Button>
+                            )}
+                          </>
+                        )}
+                      </>
+                    )}
+                  </div>
+
                 </Form.Group>
 
                 <h6>File Mappings</h6>
                 {Object.keys(fileConfigs).map((fileKey) => {
-                  const fileColumns = fileConfigs[fileKey].rawData.length > 0 
+
+                  const fileColumns = fileConfigs[fileKey].rawData.length > 0
                     ? Object.keys(fileConfigs[fileKey].rawData[0])
                     : [];
                   
+                  // Get all used columns for this file
+                  const usedColumns = getUsedColumnsForFile(fileKey);
+                  // Get current selection for this group and file
+                  const currentSelection = group.fileMappings[fileKey] || 'none';
+                  
+                  // Available columns are:
+                  // 1. The currently selected column (if any)
+                  // 2. All columns not used by other groups
+                  // 3. "none" option
+                  const availableColumns = fileColumns.filter(col => 
+                    col === currentSelection || !usedColumns.includes(col)
+                  );
+
                   return (
                     <Form.Group key={`${group.id}-${fileKey}`} className="mb-2">
                       <Form.Label>{fileKey}</Form.Label>
                       <Form.Select
-                        value={group.fileMappings[fileKey] || ''}
+
+                        value={currentSelection}
                         onChange={(e) => updateGroupMapping(group.id, fileKey, e.target.value)}
                       >
-                        <option value="" disabled>Select column</option>
-                        {fileColumns.map((col) => (
+                        <option value="none">None</option>
+                        {availableColumns.map((col) => (
                           <option key={`${group.id}-${fileKey}-${col}`} value={col}>{col}</option>
                         ))}
                       </Form.Select>
@@ -303,23 +540,26 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
       </Modal.Body>
 
       <Modal.Footer>
+
+      {!(currentStep === 'file-preview' && currentFileIndex === 0) && (
         <Button variant="secondary" onClick={handleBack}>
           Back
         </Button>
-        <Button
-          variant="primary"
-          onClick={currentStep === 'file-preview' ? handleNextFilePreview : handleFinish}
-          disabled={
-            currentStep === 'file-preview' 
-              ? isLoadingFile || !!errorParsingFile
-              : false
-          }
-        >
-          {currentStep === 'file-preview' 
-            ? currentFileIndex < files.length - 1 ? 'Next File' : 'Configure Columns'
-            : 'Finish & Process Data'}
-        </Button>
-      </Modal.Footer>
+      )}
+      <Button
+        variant="primary"
+        onClick={currentStep === 'file-preview' ? handleNextFilePreview : handleFinish}
+        disabled={
+          currentStep === 'file-preview'
+            ? isLoadingFile || !!errorParsingFile || !!renameError
+            : false
+        }
+      >
+        {currentStep === 'file-preview'
+          ? currentFileIndex < files.length - 1 ? 'Next File' : 'Configure Columns'
+          : 'Finish & Process Data'}
+      </Button>
+    </Modal.Footer>
     </Modal>
   );
 };
