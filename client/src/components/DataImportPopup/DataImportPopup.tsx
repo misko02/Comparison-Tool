@@ -9,11 +9,16 @@ interface FileConfig {
   rawData: any[];
 }
 
+
 interface Group {
   id: string;
   name: string;
   fileMappings: Record<string, string>; // { [fileKey]: columnName }
 }
+
+export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComplete }) => {
+  const [currentFileIndex, setCurrentFileIndex] = useState(0);
+  const [metricName, setMetricName] = useState(''); // Główny klucz metryki
 
 interface Props {
   show: boolean;
@@ -43,6 +48,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
   const resetState = () => {
     setCurrentStep('file-preview');
     setCurrentFileIndex(0);
+    setMetricName('');
     setFileConfigs({});
     setColumnOptions([]);
     setErrorParsingFile(null);

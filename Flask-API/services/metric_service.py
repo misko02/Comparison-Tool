@@ -28,12 +28,11 @@ def calculate_basic_statistics(series: dict):
         "std_dev": series.std(ddof=0)   # ddof=0 for population standard deviation
     }
 
-def calculate_autocorrelation(series: dict, nlags: int = 20):
+def calculate_autocorrelation(series: dict):
     """
     Calculates the autocorrelation function (ACF) for a time series.
     Args:
         series (dict): Timeseries.
-        nlags (int): Maximum lag to compute ACF.
     Returns:
         np.ndarray: Array of ACF values.
     """
@@ -41,10 +40,13 @@ def calculate_autocorrelation(series: dict, nlags: int = 20):
         return np.array([])
     try:
         series: pd.Series = pd.Series(series)
+        data = pd.to_numeric(series, errors='coerce').dropna().values
     except Exception as e:
         return "could not convert series to pd.Series: " + str(e)
     # acf from statsmodels returns the autocorrelation values for lags 0 to nlags
-    return acf(series, nlags=nlags, fft=True)
+    # we use nlags=1 to get the first lag autocorrelation
+    acf_values = acf(data, nlags=1, fft=True)
+    return float(acf_values[1])
 
 #JESZCZE POTRZEBNY JEST ZAKRES MIN MAX SZEREGU
 

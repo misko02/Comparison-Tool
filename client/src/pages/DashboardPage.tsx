@@ -13,6 +13,7 @@ import {extractFilenamesPerCategory} from "../services/extractFilenamesPerCatego
 import {fetchAllMedians} from "../services/fetchAllMedians";
 import {fetchAllVariances} from "../services/fetchAllVariances";
 import {fetchAllStdDevs} from "../services/fetchAllStdDevs";
+import {fetchAllAutoCorrelations} from "../services/fetchAllAutoCorrelations";
 import metrics from "../components/Metric/Metrics";
 
 function DashboardPage() {
@@ -27,6 +28,7 @@ function DashboardPage() {
   const [stdDevsValues, setStdDevsValues] = useState<Record<string, Record<string, number>>>({});
   const [filenamesPerCategory, setFilenamesPerCategory] = useState<Record<string, string[]>>({});
   const [dataPreview, setDataPreview] = useState<Record<string, any> | null>(null);
+  const [autoCorrelationValues, setAutoCorrelationValues] = useState<Record<string, Record<string, number>>>({});
 
   const handleFetchData = useCallback(async (showLoadingIndicator = true) => {
   if (showLoadingIndicator) setIsLoading(true);
@@ -50,28 +52,33 @@ function DashboardPage() {
     const stdDevs = await fetchAllStdDevs(names);
     setStdDevsValues(stdDevs);
 
-  } catch (err: any) {
-    setError(err.message || 'Failed to fetch data.');
-    setChartData({}); // Wyczyść dane w przypadku błędu
-  } finally {
-    if (showLoadingIndicator) setIsLoading(false);
-  }
-}, []);
 
-   useEffect(() => {
+    const autoCorrelations = await fetchAllAutoCorrelations(names);
+    setAutoCorrelationValues(autoCorrelations);
+
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch data.');
+      setChartData({}); // Wyczyść dane w przypadku błędu
+    } finally {
+      if (showLoadingIndicator) setIsLoading(false);
+    }
+  }, []);
+  useEffect(() => {
     const storedData = localStorage.getItem('chartData');
     const storedMeanValues = localStorage.getItem('meanValues');
     const storedMedianValues = localStorage.getItem('medianValues');
     const storedVarianceValues = localStorage.getItem('varianceValues');
     const storedStdDevsValues = localStorage.getItem('stdDevsValues');
+    const storedAutoCorrelationsValues = localStorage.getItem('autoCorrelationValues');
     const storedFilenames = localStorage.getItem('filenamesPerCategory');
-    if (storedData && storedMeanValues && storedMedianValues && storedVarianceValues && storedStdDevsValues && storedFilenames) {
+    if (storedData && storedMeanValues && storedMedianValues && storedVarianceValues && storedStdDevsValues && storedAutoCorrelationsValues && storedFilenames) {
       try {
         const parsedData = JSON.parse(storedData);
         const parsedMeanValues = JSON.parse(storedMeanValues);
         const parsedMedianValues = JSON.parse(storedMedianValues);
         const parsedVarianceValues = JSON.parse(storedVarianceValues);
         const parsedStdDevsValues = JSON.parse(storedStdDevsValues);
+        const parsedAutoCorrelations = JSON.parse(storedAutoCorrelationsValues);
         const parsedFilenames = JSON.parse(storedFilenames);
 
         setChartData(parsedData);
@@ -79,6 +86,7 @@ function DashboardPage() {
         setMedianValues(parsedMedianValues);
         setVarianceValues(parsedVarianceValues);
         setStdDevsValues(parsedStdDevsValues);
+        setAutoCorrelationValues(parsedAutoCorrelations)
         setFilenamesPerCategory(parsedFilenames);
       } catch (e) {
         localStorage.removeItem('chartData');
@@ -109,10 +117,14 @@ function DashboardPage() {
     if (Object.keys(stdDevsValues).length > 0) {
       localStorage.setItem('stdDevsValues', JSON.stringify(stdDevsValues));
     }
+    if (Object.keys(stdDevsValues).length > 0) {
+      localStorage.setItem('autoCorrelationValues', JSON.stringify(autoCorrelationValues));
+    }
     if (Object.keys(filenamesPerCategory).length > 0) {
       localStorage.setItem('filenamesPerCategory', JSON.stringify(filenamesPerCategory));
     }
-  }, [meanValues, medianValues, varianceValues, stdDevsValues, filenamesPerCategory]);
+
+  }, [meanValues, medianValues, varianceValues, stdDevsValues, autoCorrelationValues, filenamesPerCategory]);
 
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -166,6 +178,7 @@ function DashboardPage() {
     setMedianValues({});
     setVarianceValues({});
     setStdDevsValues({});
+    setAutoCorrelationValues({});
     setFilenamesPerCategory({}); // Wyczyść kategorie plików
     setDataPreview(null);
     localStorage.removeItem('chartData');
@@ -193,13 +206,15 @@ function DashboardPage() {
   const medianMetricNames = Object.keys(medianValues[category] || {});
     const varianceMetricNames = Object.keys(varianceValues[category] || {});
     const stdDevMetricNames = Object.keys(stdDevsValues[category] || {});
-  const allUniqueMetricNames = new Set([...meanMetricNames, ...medianMetricNames, ...varianceMetricNames, ...stdDevMetricNames]);
+    const autoCorrelationMetricNames = Object.keys(autoCorrelationValues[category] || {});
+  const allUniqueMetricNames = new Set([...meanMetricNames, ...medianMetricNames, ...varianceMetricNames, ...stdDevMetricNames, ...autoCorrelationMetricNames]);
 
   const combinedMetrics = Array.from(allUniqueMetricNames).map(metricName => {
     const mean = meanValues[category]?.[metricName];
     const median = medianValues[category]?.[metricName];
     const variance = varianceValues[category]?.[metricName];
     const stdDev = stdDevsValues[category]?.[metricName];
+    const autoCorrelation = autoCorrelationValues[category]?.[metricName];
 
        return {
       id: metricName,
@@ -207,9 +222,10 @@ function DashboardPage() {
       mean: mean,
       median: median,
       variance: variance,
-      stdDev: stdDev
+      stdDev: stdDev,
+      autoCorrelation: autoCorrelation,
     };
-  }).filter(metric => metric.mean !== undefined || metric.median !== undefined || metric.variance !== undefined || metric.stdDev !== undefined);
+  }).filter(metric => metric.mean !== undefined || metric.median !== undefined || metric.variance !== undefined || metric.stdDev !== undefined || metric.autoCorrelation !== undefined);
 
 
   return (
@@ -256,7 +272,11 @@ function DashboardPage() {
           )}
         </div>
 
-         <a
+          <Metrics group_name={category}
+                   metrics={combinedMetrics}
+                     />
+        <a
+
           className="App-link"
           href="https://github.com/misko02/Comparison-Tool"
           target="_blank"
