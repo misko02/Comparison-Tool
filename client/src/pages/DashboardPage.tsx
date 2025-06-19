@@ -70,20 +70,10 @@ function DashboardPage() {
 
     setSelectedCategory(Object.keys(names)[0] || null);
     setSecondaryCategory(null);
-
-  } catch (err: any) {
-    setError(err.message || 'Failed to fetch data.');
-    setChartData({}); // Wyczyść dane w przypadku błędu
-  } finally {
-    if (showLoadingIndicator) setIsLoading(false);
-  }
-}, []);
-
-
+    
     const autoCorrelations = await fetchAllAutoCorrelations(names);
     setAutoCorrelationValues(autoCorrelations);
-
-    } catch (err: any) {
+   } catch (err: any) {
       setError(err.message || 'Failed to fetch data.');
       setChartData({}); // Wyczyść dane w przypadku błędu
     } finally {
