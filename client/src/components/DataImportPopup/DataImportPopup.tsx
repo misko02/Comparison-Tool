@@ -19,7 +19,7 @@ interface Props {
   show: boolean;
   files: File[];
   onHide: () => void;
-       // Zmieniamy typ, aby odzwierciedlał, że otrzymujemy jeden obiekt
+         // Zmieniamy typ, aby odzwierciedlał, że otrzymujemy jeden obiekt
   onComplete: (groupedData: Record<string, any>) => void;
 }
 
@@ -38,6 +38,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
   const [editingGroupName, setEditingGroupName] = useState<string | null>(null);
   const [tempGroupName, setTempGroupName] = useState<string>('');
   const [groupCounter, setGroupCounter] = useState(1); // Counter for default group names
+  const [groupNameError, setGroupNameError] = useState<string | null>(null);
 
   const resetState = () => {
     setCurrentStep('file-preview');
@@ -50,6 +51,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
     setEditingGroupName(null);
     setTempGroupName('');
     setGroupCounter(1);
+    setGroupNameError(null);
   };
 
   const loadFileForConfiguration = useCallback(async (fileIndex: number) => {
@@ -149,7 +151,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
   };
 
   const addNewGroup = () => {
-    const newGroupName = `Group ${groupCounter}`;
+    const newGroupName = `Group${groupCounter}`;
     setGroupCounter(prev => prev + 1);
     
     setGroups(prev => [
@@ -183,20 +185,37 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
   const startEditingGroupName = (groupId: string, currentName: string) => {
     setEditingGroupName(groupId);
     setTempGroupName(currentName);
+    setGroupNameError(null);
   };
 
-   const saveGroupName = (groupId: string) => {
-    if (!tempGroupName.trim()) {
-      return; // Don't save empty names
+  const saveGroupName = (groupId: string) => {
+    const trimmedName = tempGroupName.trim();
+    
+    if (!trimmedName) {
+      setGroupNameError('Group name cannot be empty');
+      return;
     }
-    updateGroupName(groupId, tempGroupName.trim());
+
+    // Check if the name is already used by another group
+    const nameExists = groups.some(
+      group => group.id !== groupId && group.name.toLowerCase() === trimmedName.toLowerCase()
+    );
+
+    if (nameExists) {
+      setGroupNameError('A group with this name already exists');
+      return;
+    }
+
+    updateGroupName(groupId, trimmedName);
     setEditingGroupName(null);
     setTempGroupName('');
+    setGroupNameError(null);
   };
 
   const cancelEditingGroupName = () => {
     setEditingGroupName(null);
     setTempGroupName('');
+    setGroupNameError(null);
   };
 
   const handleRenameFile = () => {
@@ -248,7 +267,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
 
   const groupAndTransformData = () => {
     const result: Record<string, any> = {};
-         // Find date group
+    // Find date group
     const dateGroup = groups.find(g => g.id === 'date');
     if (!dateGroup) return result;
 
@@ -260,11 +279,11 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
         const dateValue = row[dateColumn];
         if (dateValue === undefined) return;
 
-                // Create Date object first
+        // Create Date object first
         const dateObj = new Date(dateValue);
         if (isNaN(dateObj.getTime())) return; // Skip invalid dates
 
-         // Format date as ISO string for the chart
+        // Format date as ISO string for the chart
         const isoDateString = dateObj.toISOString();
 
         // Initialize entry for this date if not exists
@@ -298,6 +317,14 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
     const unnamedGroups = groups.filter(group => !group.name.trim());
     if (unnamedGroups.length > 0) {
       alert('Please provide names for all groups before finishing.');
+      return;
+    }
+
+    // Check for duplicate group names
+    const groupNames = groups.map(group => group.name.toLowerCase());
+    const uniqueNames = new Set(groupNames);
+    if (groupNames.length !== uniqueNames.size) {
+      alert('Please ensure all group names are unique before finishing.');
       return;
     }
 
@@ -358,7 +385,6 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
                       <Button size="sm" variant="outline-secondary" onClick={() => {
                         setEditingFileName(false);
                         setRenameError(null);
-                        setTempFileName(''); // Reset the temporary file name
                       }}>✕</Button>
                       {renameError && (
                         <Form.Control.Feedback type="invalid" style={{ position: 'static', display: 'block', marginTop: '5px' }}>
@@ -408,9 +434,15 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
                           value={tempGroupName}
                           onChange={(e) => setTempGroupName(e.target.value)}
                           autoFocus
+                          isInvalid={!!groupNameError}
                         />
                         <Button size="sm" variant="success" onClick={() => saveGroupName(group.id)}>✓</Button>
                         <Button size="sm" variant="outline-secondary" onClick={cancelEditingGroupName}>✕</Button>
+                        {groupNameError && (
+                          <Form.Control.Feedback type="invalid" style={{ position: 'static', display: 'block', marginTop: '5px' }}>
+                            {groupNameError}
+                          </Form.Control.Feedback>
+                        )}
                       </>
                     ) : (
                       <>

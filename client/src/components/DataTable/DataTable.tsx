@@ -1,11 +1,11 @@
 // src/components/DataTable/DataTable.tsx
 import React from 'react';
-import { TimeSeriesEntry } from '@/services/fetchTimeSeries';
 
-interface DataTableProps {
-  data: TimeSeriesEntry[];
+export interface DataTableProps {
+  data: Record<string, string | number>[];
   title: string;
 }
+
 
 export const DataTable: React.FC<DataTableProps> = ({ data, title }) => {
   // Bierzemy maks 20 rekordów
