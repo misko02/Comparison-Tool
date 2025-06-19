@@ -26,8 +26,10 @@ export const DataTable: React.FC<DataTableProps> = ({ data, title }) => {
         <div>No data to display</div>
       ) : (
         <div className="table-responsive">
+
           <table className="table table-borderless table-hover align-middle">
             <thead className="table-light">
+
               <tr>
                 {columns.map((col) => (
                   <th key={col} scope="col">

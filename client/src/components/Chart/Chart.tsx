@@ -3,20 +3,21 @@ import Plot from "react-plotly.js";
 import {TimeSeriesEntry} from "@/services/fetchTimeSeries";
 
 interface MyChartProps {
-    data: Record<string, TimeSeriesEntry[]>;
+    primaryData: Record<string, TimeSeriesEntry[]>;
+    secondaryData?: Record<string, TimeSeriesEntry[]>;
     title?: string;
 }
 
-export const MyChart: React.FC<MyChartProps> = ({data, title}) => {
+export const MyChart: React.FC<MyChartProps> = ({primaryData, secondaryData, title}) => {
     const [xaxisRange, setXaxisRange] = useState<[string | null, string | null]>([null, null]);
     const [tickFormat, setTickFormat] = useState('%d.%m.%Y'); // przed zoomem tylko dzień
     const [showMarkers, setShowMarkers] = useState(false);
     const [customRange, setCustomRange] = useState(false);
     const [customYMin, setCustomYMin] = useState<string>('');
     const [customYMax, setCustomYMax] = useState<string>('');
-
+    const allData = {...primaryData, ...(secondaryData || {})};
     useEffect(() => { // ten hook pozwala na dynamiczny zakres osi X od razu po załadowaniu danych, bez niego najpierw trzeba odświeżyć stronę
-    const allXValues = Object.values(data).flat().map(d => new Date(d.x));
+    const allXValues = Object.values(allData).flat().map(d => new Date(d.x));
     if (allXValues.length === 0) return;
 
     const minDate = new Date(Math.min(...allXValues.map(d => d.getTime())));
@@ -28,7 +29,7 @@ export const MyChart: React.FC<MyChartProps> = ({data, title}) => {
     };
 
     handleRelayout(fakeEvent);
-}, [data]);
+}, [primaryData, secondaryData]);
 
     const handleRelayout = (event: any) => {
         if (event['xaxis.range[0]'] && event['xaxis.range[1]']) {
@@ -62,16 +63,27 @@ export const MyChart: React.FC<MyChartProps> = ({data, title}) => {
         '#bcbd22', '#17becf'
     ];
 
-    const traces = Object.entries(data).map(([name, series], index) => ({
-        x: series.map(d => d.x),
-        y: series.map(d => d.y),
-        type: 'scattergl' as const,
-        mode: showMarkers ? 'lines+markers' as const : 'lines' as const,
-        name: name,
-        line: {color: colors[index % colors.length]},
-        marker: {size: 5, color: colors[index % colors.length]},
-    }));
 
+    const traces =  [...Object.entries(primaryData).map(([name, series], index) => ({
+      x: series.map(d => d.x),
+      y: series.map(d => d.y),
+      type: 'scattergl' as const,
+      mode: (showMarkers ? 'lines+markers' : 'lines') as 'lines' | 'lines+markers',
+      name: name,
+      line: { color: colors[index % colors.length] },
+      marker: { size: 5, color: colors[index % colors.length] },
+      yaxis: 'y1'
+    })),
+    ...(secondaryData ? Object.entries(secondaryData).map(([name, series], index) => ({
+      x: series.map(d => d.x),
+      y: series.map(d => d.y),
+      type: 'scattergl' as const,
+      mode: (showMarkers ? 'lines+markers' : 'lines') as 'lines' | 'lines+markers',
+      name: name,
+      line: { color: colors[(index + Object.keys(primaryData).length) % colors.length] },
+      marker: { size: 5, color: colors[(index + Object.keys(primaryData).length) % colors.length] },
+      yaxis: 'y2',
+    })):[])]
     return (
         <>
 
@@ -81,7 +93,7 @@ export const MyChart: React.FC<MyChartProps> = ({data, title}) => {
                 layout={{
                     title: title || 'Time Series Data',
                     xaxis: {
-                        title: 'Time',
+                        title:{text: 'Time'},
                         type: 'date',
                         tickformat: tickFormat, // Wyświetlanie daty i godziny
                         fixedrange: false,
@@ -108,12 +120,24 @@ export const MyChart: React.FC<MyChartProps> = ({data, title}) => {
                         },
                     },
                     yaxis: {
-                        title: 'Value',
+                        title:{ text: Object.keys(primaryData)[0]?.split('.')[0] || 'Y-Axis' } ,
+                        side: 'left',
                         autorange: customRange ? false : true,
                         range: customRange ? [parseFloat(customYMin), parseFloat(customYMax)] : undefined,
                         showspikes: true,
                         spikemode: 'across',
                         spikedash: "solid",
+                        spikethickness: 1
+                    },
+                    yaxis2: {
+                        title: {text: secondaryData? Object.keys(secondaryData)[0]?.split('.')[0] || 'Second Y-Axis':''} ,
+                        overlaying: 'y',
+                        autorange: customRange ? false : true,
+                        range: customRange ? [parseFloat(customYMin), parseFloat(customYMax)] : undefined,
+                        showspikes: true,
+                        spikemode: 'across',
+                        spikedash: "solid",
+                        side: 'right',
                         spikethickness: 1
                     },
                     height: 600,

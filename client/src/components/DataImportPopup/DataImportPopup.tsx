@@ -10,6 +10,7 @@ interface FileConfig {
 }
 
 
+
 interface Group {
   id: string;
   name: string;
@@ -42,10 +43,13 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
   const [groupCounter, setGroupCounter] = useState(1); // Counter for default group names
   const [groupNameError, setGroupNameError] = useState<string | null>(null);
 
+
   const resetState = () => {
     setCurrentStep('file-preview');
     setCurrentFileIndex(0);
+
     setMetricName('');
+
     setFileConfigs({});
     setColumnOptions([]);
     setErrorParsingFile(null);
@@ -55,6 +59,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
     setTempGroupName('');
     setGroupCounter(1);
     setGroupNameError(null);
+
   };
 
   const loadFileForConfiguration = useCallback(async (fileIndex: number) => {
@@ -64,6 +69,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
     setErrorParsingFile(null);
     const file = files[fileIndex];
     const fileKey = getFileKey(file);
+
 
     if (fileConfigs[fileKey]?.rawData) {
       const firstEntry = fileConfigs[fileKey].rawData[0];
@@ -114,6 +120,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
 
   useEffect(() => {
     if (show && files.length > 0 && currentStep === 'file-preview') {
+
       setRenameError(null);
       setEditingFileName(false); 
       loadFileForConfiguration(currentFileIndex);
@@ -367,8 +374,10 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
     <Modal show={show} onHide={onHide} backdrop="static" keyboard={false} size="xl" centered scrollable>
       <Modal.Header closeButton>
         <Modal.Title className="ms-2 d-flex align-items-center">
+
           {currentStep === 'file-preview'
             ? `File Preview (${currentFileIndex + 1}/${files.length})`
+
             : 'Configure Columns'}
         </Modal.Title>
       </Modal.Header>
@@ -377,6 +386,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
         {currentStep === 'file-preview' ? (
           <>
             <Form.Group className="mb-4">
+
               <Form.Label className="fw-bold d-flex align-items-center gap-2">
                 File:
                 {currentFile ? (
@@ -419,7 +429,9 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
             {isLoadingFile && <p>Loading file...</p>}
             {errorParsingFile && <p style={{ color: 'red' }}>Error: {errorParsingFile}</p>}
 
+
             {!isLoadingFile && currentConfig?.rawData && (
+
               <div className="mt-4">
                 <DataTable data={currentConfig.rawData.slice(0, 5)} title="File Preview" />
               </div>
@@ -432,6 +444,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
               <div key={group.id} className="mb-4 p-3 border rounded">
                 <Form.Group className="mb-3">
                   <Form.Label>Group Name</Form.Label>
+
                   <div className="d-flex align-items-center gap-2">
                     {editingGroupName === group.id ? (
                       <>
@@ -477,10 +490,12 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
                       </>
                     )}
                   </div>
+
                 </Form.Group>
 
                 <h6>File Mappings</h6>
                 {Object.keys(fileConfigs).map((fileKey) => {
+
                   const fileColumns = fileConfigs[fileKey].rawData.length > 0
                     ? Object.keys(fileConfigs[fileKey].rawData[0])
                     : [];
@@ -502,6 +517,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
                     <Form.Group key={`${group.id}-${fileKey}`} className="mb-2">
                       <Form.Label>{fileKey}</Form.Label>
                       <Form.Select
+
                         value={currentSelection}
                         onChange={(e) => updateGroupMapping(group.id, fileKey, e.target.value)}
                       >
@@ -524,6 +540,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
       </Modal.Body>
 
       <Modal.Footer>
+
       {!(currentStep === 'file-preview' && currentFileIndex === 0) && (
         <Button variant="secondary" onClick={handleBack}>
           Back
