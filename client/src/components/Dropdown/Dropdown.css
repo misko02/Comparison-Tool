@@ -1,0 +1,42 @@
+/* Główny kontener - wymusza pełną szerokość */
+.file-accordion {
+  width: 100%;
+}
+
+/* Nagłówek Accordion - stała szerokość */
+.accordion-header {
+  width: 100%;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Zawartość Accordion - taka sama szerokość jak nagłówek */
+.accordion-content {
+  width: 100%;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Kontener wewnątrz Accordion.Body */
+.accordion-layout {
+  width: 100%;
+}
+
+/* Switch - pełna szerokość */
+.switch {
+  width: 100%;
+  height: auto;
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+}
+
+.switch .form-check-label {
+  white-space: normal;
+  word-break: break-word;
+  flex-grow: 1;
+  padding-right: 8px;
+}

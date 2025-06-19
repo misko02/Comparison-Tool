@@ -3,6 +3,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import './DashboardPage.css';
 import '../components/Chart/Chart.css';
 import '../components/Metric/Metrics.css';
+import '../components/Dropdown/Dropdown.css';
 import { sendProcessedTimeSeriesData } from '../services/uploadTimeSeries';
 import { MyChart } from '../components/Chart/Chart';
 import { fetchTimeSeriesData, TimeSeriesEntry } from '../services/fetchTimeSeries';
@@ -14,6 +15,7 @@ import {fetchAllMedians} from "../services/fetchAllMedians";
 import {fetchAllVariances} from "../services/fetchAllVariances";
 import {fetchAllStdDevs} from "../services/fetchAllStdDevs";
 import { Form } from 'react-bootstrap';
+import Dropdown from '../components/Dropdown/Dropdown';
 
 
 
@@ -281,10 +283,64 @@ function DashboardPage() {
   }).filter(metric => metric.mean !== undefined || metric.median !== undefined || metric.variance !== undefined || metric.stdDev !== undefined);
 
 
-  return (
-    <div className="App">
-      <main className="App-main-content">
-        <div className="App-controls">
+return (
+  <div className="App">
+    <main className="App-main-content">
+      <div style={{  display: 'flex',
+  flexDirection: 'column',
+  gap: '16px',width: '100%'}}>
+      <div style={{display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%',
+        marginBottom: '20px'
+      }}>
+        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+          {Object.keys(filenamesPerCategory).length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Form.Label htmlFor="category-select" className="mb-2" style={{ marginRight: '10px' }}>
+                Main Y-Axis
+              </Form.Label>
+              <Form.Select
+                id="category-select"
+                aria-label="Main Y-axis group"
+                style={{ width: '200px' }}
+                onChange={handleDropdownChange}
+                value={selectedCategory || Object.keys(filenamesPerCategory)[0]}
+              >
+                {Object.keys(filenamesPerCategory).map((cat) => (
+                  <option key={cat} value={cat} disabled={cat === secondaryCategory}>
+                    {cat}
+                  </option>
+                ))}
+              </Form.Select>
+            </div>
+          )}
+
+          {Object.keys(filenamesPerCategory).length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Form.Label htmlFor="secondary-category-select" className="mb-2" style={{ marginRight: '10px' }}>
+                Second Y-Axis
+              </Form.Label>
+              <Form.Select
+                id="secondary-category-select"
+                aria-label="Second Y-axis group"
+                style={{ width: '200px' }}
+                onChange={handleSecondaryDropdownChange}
+                value={secondaryCategory || ''}
+              >
+                <option value="">-- None --</option>
+                {Object.keys(filenamesPerCategory).map((cat) => (
+                  <option key={cat} value={cat} disabled={cat === selectedCategory}>
+                    {cat}
+                  </option>
+                ))}
+              </Form.Select>
+            </div>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <label htmlFor="file-upload" className={`custom-file-upload ${isLoading ? 'disabled' : ''}`}>
             {isLoading ? 'Loading...' : 'Upload files'}
           </label>
@@ -297,105 +353,69 @@ function DashboardPage() {
             style={{ display: 'none' }}
             disabled={isLoading}
           />
+          
+          <button
+            onClick={handleReset}
+            className="custom-reset-button"
+            disabled={isLoading}
+          >
+            Reset data
+          </button>
         </div>
+      </div>
 
-        {error && <p className="App-error" style={{ color: 'red', textAlign: 'center' }}>Error: {error}</p>}
+      {error && <p className="App-error" style={{ color: 'red', textAlign: 'center' }}>Error: {error}</p>}
 
-        {dataPreview && (
-          <div className="data-preview">
-            <h3>Data Preview (first 3 entries)</h3>
-            <pre>{JSON.stringify(dataPreview, null, 2)}</pre>
+
+
+
+      <div className="Chart-container">
+        {isLoading && Object.keys(chartData).length === 0 && <p style={{ textAlign: 'center', padding: '30px' }}>Loading chart...</p>}
+        {!isLoading && Object.keys(chartData).length === 0 && !error && (
+          <p style={{ textAlign: 'center', padding: '30px' }}>Load data to visualize</p>
+        )}
+        {!isLoading && Object.keys(chartData).length > 0 && (
+          <div className="chart-wrapper">
+            <MyChart 
+              primaryData={filteredData.primary}
+              secondaryData={filteredData.secondary || undefined}
+              title="Time Series Analysis"
+            />
           </div>
         )}
-        {Object.keys(filenamesPerCategory).length > 0 && (
-          <div className="d-flex flex-column align-items-center my-3">
-            <Form.Label htmlFor="category-select" className="mb-2">
-            Main Y-Axis
-            </Form.Label>
-            <Form.Select
-              id="category-select"
-              aria-label="Main Y-axis group"
-              style={{ maxWidth: '300px' }}
-              onChange={handleDropdownChange}
-              value={selectedCategory || Object.keys(filenamesPerCategory)[0]}
-            >
-              {Object.keys(filenamesPerCategory).map((cat) => (
-                <option key={cat} value={cat} disabled={cat == secondaryCategory}>
-                  {cat}
-                </option>
-              ))}
-            </Form.Select>
-          </div>
-        )}
-                {Object.keys(filenamesPerCategory).length > 0 && (
-          <div className="d-flex flex-column align-items-center my-3">
-            <Form.Label htmlFor="category-select" className="mb-2">
-            Second Y-Axis
-            </Form.Label>
-            <Form.Select
-              id="secondary-category-select"
-              aria-label="Second Y-axis group"
-              style={{ maxWidth: '300px' }}
-              onChange={handleSecondaryDropdownChange}
-              value={secondaryCategory || ''}
-            >
-              <option value="">-- None --</option>
-              {Object.keys(filenamesPerCategory).map((cat) => (
-                <option key={cat} value={cat} disabled={cat == selectedCategory}>
-                  {cat}
-                </option>
-              ))}
-            </Form.Select>
-          </div>
-        )}
-
-
+      </div>
         <Metrics 
-          group_name={category}
-          metrics={combinedMetrics}
+        group_name={category}
+        metrics={combinedMetrics}
+      />
+      <a
+        className="App-link"
+        href="https://github.com/misko02/Comparison-Tool"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Check repository
+      </a>
+
+      <DataImportPopup
+        show={isPopupOpen}
+        onHide={handlePopupClose}
+        files={selectedFiles}
+        onComplete={handlePopupComplete}
+      />
+      </div>
+      <div className='group-menu'>
+        <h4>Groups</h4>
+        {Object.entries(filenamesPerCategory).map(([category, files]) => (
+        <Dropdown
+          key={category}
+          category={category}
+          files={files}
+          onFileClick={(file) => console.log(`Clicked file: ${file}`)}
         />
-
-        <div className="Chart-container">
-          {isLoading && Object.keys(chartData).length === 0 && <p style={{ textAlign: 'center', padding: '30px' }}>Loading chart...</p>}
-          {!isLoading && Object.keys(chartData).length === 0 && !error && (
-            <p style={{ textAlign: 'center', padding: '30px' }}>Load data to visualize</p>
-          )}
-          {!isLoading && Object.keys(chartData).length > 0 && (
-            <div className="chart-wrapper">
-              <MyChart 
-                primaryData={filteredData.primary}
-                secondaryData={filteredData.secondary || undefined}
-                title="Time Series Analysis"
-              />
-            </div>
-          )}
-        </div>
-
-         <a
-          className="App-link"
-          href="https://github.com/misko02/Comparison-Tool"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Check repository
-        </a>
-
-        <DataImportPopup
-          show={isPopupOpen}
-          onHide={handlePopupClose}
-          files={selectedFiles}
-          onComplete={handlePopupComplete}
-        />
-        <button
-              onClick={handleReset}
-              className="custom-reset-button"
-              disabled={isLoading}
-            >
-              Reset data
-            </button>
-      </main>
-    </div>
-  );
-}
-
+      ))}
+      </div>
+    </main>
+  </div>
+);}
 export default DashboardPage;

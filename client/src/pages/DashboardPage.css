@@ -19,8 +19,10 @@ body{
   background-color: #ffffff;
   overflow-y: auto;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
+  width:100%;
+  gap:16px
+
 }
 
 .App-header {
@@ -59,4 +61,19 @@ button,
 button:hover,
 .custom-file-upload:hover {
   background-color: #0056b3;
+}
+
+.group-menu {
+display: flex;
+width: 256px;
+max-width: 256px;
+padding: 16px;
+flex-direction: column;
+align-items: center;
+gap: 10px;
+flex-shrink: 0;
+align-self: stretch;
+border-radius: var(--Section-Corner, 4px);
+background-color: #f8f9fa;
+
 }

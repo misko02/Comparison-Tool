@@ -80,10 +80,9 @@ export const MyChart: React.FC<MyChartProps> = ({primaryData, secondaryData, tit
       type: 'scattergl' as const,
       mode: (showMarkers ? 'lines+markers' : 'lines') as 'lines' | 'lines+markers',
       name: name,
-      line: { color: colors[index % colors.length] },
-      marker: { size: 5, color: colors[index % colors.length] },
+      line: { color: colors[(index + Object.keys(primaryData).length) % colors.length] },
+      marker: { size: 5, color: colors[(index + Object.keys(primaryData).length) % colors.length] },
       yaxis: 'y2',
-      dash: 'dash'
     })):[])]
     return (
         <>
@@ -94,7 +93,7 @@ export const MyChart: React.FC<MyChartProps> = ({primaryData, secondaryData, tit
                 layout={{
                     title: title || 'Time Series Data',
                     xaxis: {
-                        title: 'Time',
+                        title:{text: 'Time'},
                         type: 'date',
                         tickformat: tickFormat, // Wyświetlanie daty i godziny
                         fixedrange: false,
@@ -121,7 +120,8 @@ export const MyChart: React.FC<MyChartProps> = ({primaryData, secondaryData, tit
                         },
                     },
                     yaxis: {
-                        title: 'Y-Axis',
+                        title:{ text: Object.keys(primaryData)[0]?.split('.')[0] || 'Y-Axis' } ,
+                        side: 'left',
                         autorange: customRange ? false : true,
                         range: customRange ? [parseFloat(customYMin), parseFloat(customYMax)] : undefined,
                         showspikes: true,
@@ -130,7 +130,7 @@ export const MyChart: React.FC<MyChartProps> = ({primaryData, secondaryData, tit
                         spikethickness: 1
                     },
                     yaxis2: {
-                        title: 'Second Y-Axis',
+                        title: {text: secondaryData? Object.keys(secondaryData)[0]?.split('.')[0] || 'Second Y-Axis':''} ,
                         overlaying: 'y',
                         autorange: customRange ? false : true,
                         range: customRange ? [parseFloat(customYMin), parseFloat(customYMax)] : undefined,
