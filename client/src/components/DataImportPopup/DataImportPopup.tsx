@@ -16,10 +16,6 @@ interface Group {
   fileMappings: Record<string, string>; // { [fileKey]: columnName }
 }
 
-export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComplete }) => {
-  const [currentFileIndex, setCurrentFileIndex] = useState(0);
-  const [metricName, setMetricName] = useState(''); // Główny klucz metryki
-
 interface Props {
   show: boolean;
   files: File[];
@@ -29,6 +25,7 @@ interface Props {
 }
 
 export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComplete }) => {
+  const [metricName, setMetricName] = useState(''); // Główny klucz metryki
   const [currentStep, setCurrentStep] = useState<'file-preview' | 'column-config'>('file-preview');
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
   const [fileConfigs, setFileConfigs] = useState<Record<string, FileConfig>>({});

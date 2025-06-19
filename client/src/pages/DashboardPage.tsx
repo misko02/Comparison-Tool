@@ -255,11 +255,6 @@ function DashboardPage() {
           </div>
         )}
 
-        <Metrics 
-          group_name={category}
-          metrics={combinedMetrics}
-        />
-
         <div className="Chart-container">
           {isLoading && Object.keys(chartData).length === 0 && <p style={{ textAlign: 'center', padding: '30px' }}>Loading chart...</p>}
           {!isLoading && Object.keys(chartData).length === 0 && !error && (
