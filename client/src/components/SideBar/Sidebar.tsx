@@ -37,7 +37,7 @@ export const Sidebar = ({ page }: Props): JSX.Element => {
         ];
 
   return (
-    <div className={`sidebar bg-white border border-gray-400 rounded d-flex flex-column gap-1 p-3`}>
+    <div className={`sidebar section-container d-flex flex-column gap-1 p-3`}>
       {navItems.map(item => (
         <SidebarItem key={item.to} text={item.text} to={item.to} /> // Iterates through navItems and renders each as a SidebarItem
       ))}

@@ -9,7 +9,7 @@ interface Props {
 
 export const SidebarItem = ({ text, to }: Props): JSX.Element => {
   return (
-    <NavLink to={to} className={({ isActive }) => `sidebar-item d-flex align-items-center px-3 py-2 rounded text-decoration-none text-start ${isActive ? "active" : ""}`}>
+    <NavLink to={to} className={({ isActive }) => `sidebar-item d-flex align-items-center px-3 py-2 custom-rounded text-decoration-none text-start ${isActive ? "active" : ""}`}>
       <span className="fs-6 fw-medium">{text}</span> {/* Item text */}
     </NavLink>
   );
