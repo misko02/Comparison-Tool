@@ -15,6 +15,7 @@ export const MyChart: React.FC<MyChartProps> = ({primaryData, secondaryData, tit
     const [customRange, setCustomRange] = useState(false);
     const [customYMin, setCustomYMin] = useState<string>('');
     const [customYMax, setCustomYMax] = useState<string>('');
+    const [visibleMap, setVisibleMap] = useState<Record<string, boolean>>({});
     const allData = {...primaryData, ...(secondaryData || {})};
     useEffect(() => { // ten hook pozwala na dynamiczny zakres osi X od razu po załadowaniu danych, bez niego najpierw trzeba odświeżyć stronę
     const allXValues = Object.values(allData).flat().map(d => new Date(d.x));
@@ -30,6 +31,15 @@ export const MyChart: React.FC<MyChartProps> = ({primaryData, secondaryData, tit
 
     handleRelayout(fakeEvent);
 }, [primaryData, secondaryData]);
+
+    const handleLegendClick = (event: any) => {
+    const name = event.data[event.curveNumber].name;
+    setVisibleMap(prev => ({
+        ...prev,
+        [name]: !(prev[name] ?? true) // toggle widoczności
+    }));
+    return false; // zapobiega domyślnemu zachowaniu Plotly
+};
 
     const handleRelayout = (event: any) => {
         if (event['xaxis.range[0]'] && event['xaxis.range[1]']) {
@@ -72,7 +82,9 @@ export const MyChart: React.FC<MyChartProps> = ({primaryData, secondaryData, tit
       name: name,
       line: { color: colors[index % colors.length] },
       marker: { size: 5, color: colors[index % colors.length] },
-      yaxis: 'y1'
+      yaxis: 'y1',
+visible: (visibleMap[name] === false ? 'legendonly' : undefined) as 'legendonly' | undefined,
+
     })),
     ...(secondaryData ? Object.entries(secondaryData).map(([name, series], index) => ({
       x: series.map(d => d.x),
@@ -83,6 +95,8 @@ export const MyChart: React.FC<MyChartProps> = ({primaryData, secondaryData, tit
       line: { color: colors[(index + Object.keys(primaryData).length) % colors.length] },
       marker: { size: 5, color: colors[(index + Object.keys(primaryData).length) % colors.length] },
       yaxis: 'y2',
+visible: (visibleMap[name] === false ? 'legendonly' : undefined) as 'legendonly' | undefined,
+
     })):[])]
     return (
         <>
@@ -146,12 +160,14 @@ export const MyChart: React.FC<MyChartProps> = ({primaryData, secondaryData, tit
                     plot_bgcolor: 'white',
                     dragmode: 'pan'
                 }}
-                style={{width: '80%'}}
+                style={{width: '100%'}}
                 config={{responsive: true,
                 scrollZoom: true,
                 displaylogo: false,
                 modeBarButtonsToRemove: ['select2d', 'lasso2d']}}
                 onRelayout={handleRelayout}
+                onLegendClick={handleLegendClick}
+
             />
                         <div style={{margin: '20px', textAlign: 'center'}}>
                 <label>
@@ -174,17 +190,20 @@ export const MyChart: React.FC<MyChartProps> = ({primaryData, secondaryData, tit
                 </label>
                 <button
                     onClick={() => setCustomRange(true)}
-                    style={{marginLeft: '10px'}}
+                                className="button"
+
                 >
                     Apply
                 </button>
                 <button
+                    className="button"
+
                     onClick={() => {
                         setCustomYMin('');
                         setCustomYMax('');
                         setCustomRange(false);
+
                     }}
-                    style={{marginLeft: '10px', marginTop: '20px'}}
                 >
                     Reset
                 </button>

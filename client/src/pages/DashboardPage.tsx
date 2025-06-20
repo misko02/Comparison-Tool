@@ -8,7 +8,7 @@ import { sendProcessedTimeSeriesData } from '../services/uploadTimeSeries';
 import { MyChart } from '../components/Chart/Chart';
 import { fetchTimeSeriesData, TimeSeriesEntry } from '../services/fetchTimeSeries';
 import { DataImportPopup } from '../components/DataImportPopup/DataImportPopup';
-import Metrics from "../components/Metric/Metrics";
+import Metrics, {CombinedMetric} from "../components/Metric/Metrics";
 import {fetchAllMeans} from "../services/fetchAllMeans";
 import {extractFilenamesPerCategory} from "../services/extractFilenamesPerCategory";
 import {fetchAllMedians} from "../services/fetchAllMedians";
@@ -32,6 +32,8 @@ function DashboardPage() {
   const [stdDevsValues, setStdDevsValues] = useState<Record<string, Record<string, number>>>({});
   const [filenamesPerCategory, setFilenamesPerCategory] = useState<Record<string, string[]>>({});
   const [dataPreview, setDataPreview] = useState<Record<string, any> | null>(null);
+  const [groupedMetrics, setGroupedMetrics] = useState<Record<string, CombinedMetric[]>>({});
+
   const [filteredData, setFilteredData] = useState<{
   primary: Record<string, TimeSeriesEntry[]>;
   secondary: Record<string, TimeSeriesEntry[]> | null;
@@ -250,6 +252,9 @@ function DashboardPage() {
     setVarianceValues({});
     setStdDevsValues({});
     setAutoCorrelationValues({});
+    setGroupedMetrics({});
+    setSelectedCategory(null);
+setSecondaryCategory(null);
     setFilenamesPerCategory({}); // Wyczyść kategorie plików
     setDataPreview(null);
     localStorage.removeItem('chartData');
@@ -271,32 +276,40 @@ function DashboardPage() {
     }
   };
 
+useEffect(() => {
+  const updatedGroupedMetrics: Record<string, CombinedMetric[]> = {};
 
-  const category = Object.keys(filenamesPerCategory).length > 0 ? Object.keys(filenamesPerCategory)[0] : 'No categories available';
-  const meanMetricNames = Object.keys(meanValues[category] || {});
-  const medianMetricNames = Object.keys(medianValues[category] || {});
+  const visibleCategories = [selectedCategory, secondaryCategory].filter(Boolean) as string[];
+
+  visibleCategories.forEach((category) => {
+    const meanMetricNames = Object.keys(meanValues[category] || {});
+    const medianMetricNames = Object.keys(medianValues[category] || {});
     const varianceMetricNames = Object.keys(varianceValues[category] || {});
     const stdDevMetricNames = Object.keys(stdDevsValues[category] || {});
     const autoCorrelationMetricNames = Object.keys(autoCorrelationValues[category] || {});
-  const allUniqueMetricNames = new Set([...meanMetricNames, ...medianMetricNames, ...varianceMetricNames, ...stdDevMetricNames, ...autoCorrelationMetricNames]);
 
-  const combinedMetrics = Array.from(allUniqueMetricNames).map(metricName => {
-    const mean = meanValues[category]?.[metricName];
-    const median = medianValues[category]?.[metricName];
-    const variance = varianceValues[category]?.[metricName];
-    const stdDev = stdDevsValues[category]?.[metricName];
-    const autoCorrelation = autoCorrelationValues[category]?.[metricName];
+    const allUniqueMetricNames = new Set([
+      ...meanMetricNames,
+      ...medianMetricNames,
+      ...varianceMetricNames,
+      ...stdDevMetricNames,
+      ...autoCorrelationMetricNames,
+    ]);
 
-       return {
+    updatedGroupedMetrics[category] = Array.from(allUniqueMetricNames).map((metricName) => ({
       id: metricName,
       name: metricName,
-      mean: mean,
-      median: median,
-      variance: variance,
-      stdDev: stdDev,
-      autoCorrelation: autoCorrelation,
-    };
-  }).filter(metric => metric.mean !== undefined || metric.median !== undefined || metric.variance !== undefined || metric.stdDev !== undefined || metric.autoCorrelation !== undefined);
+      mean: meanValues[category]?.[metricName],
+      median: medianValues[category]?.[metricName],
+      variance: varianceValues[category]?.[metricName],
+      stdDev: stdDevsValues[category]?.[metricName],
+      autoCorrelation: autoCorrelationValues[category]?.[metricName],
+    }));
+  });
+
+  setGroupedMetrics(updatedGroupedMetrics);
+}, [meanValues, medianValues, varianceValues, stdDevsValues, autoCorrelationValues, selectedCategory, secondaryCategory]);
+
 
 
 return (
@@ -365,7 +378,7 @@ return (
           
           <button
             onClick={handleReset}
-            className="custom-reset-button"
+            className="custom-file-upload"
             disabled={isLoading}
           >
             Reset data
@@ -393,10 +406,9 @@ return (
           </div>
         )}
       </div>
-        <Metrics 
-        group_name={category}
-        metrics={combinedMetrics}
-      />
+        {Object.keys(groupedMetrics).length > 0 && (
+          <Metrics groupedMetrics={groupedMetrics} />
+        )}
       <a
         className="App-link"
         href="https://github.com/misko02/Comparison-Tool"
