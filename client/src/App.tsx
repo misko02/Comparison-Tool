@@ -10,6 +10,15 @@ import SettingsPage from './pages/Settings/SettingsPage';
 import HelpPage from './pages/Help/HelpPage';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { HelpGettingStarted } from "./pages/Help/HelpSubGettingStarted";
+import { HelpChartVisualization } from "./pages/Help/HelpSubChartVisualization";
+import { HelpDataTypes } from "./pages/Help/HelpSubDataTypes";
+import { HelpAnomalyDetection } from "./pages/Help/HelpSubAnomalyDetection";
+import { HelpTroubleshooting } from "./pages/Help/HelpSubTroubleshooting";
+import { HelpAbout } from "./pages/Help/HelpSubAbout";
+import { HelpMetrics } from "./pages/Help/HelpSubMetrics";
+import { HelpPlugins } from "./pages/Help/HelpSubPlugins";
+import { HelpReports } from "./pages/Help/HelpSubReports";
 
 const App: React.FC = () => {
   return (
@@ -27,7 +36,15 @@ const App: React.FC = () => {
             {/* Add here settings subpages */}
           </Route>
           <Route path="/help" element={<HelpPage />}>
-            {/* Add here help subpages */}
+            <Route path="getting-started" element={<HelpGettingStarted />} />
+            <Route path="data-types" element={<HelpDataTypes />} />
+            <Route path="chart-visualization" element={<HelpChartVisualization />} />
+            <Route path="metrics" element={<HelpMetrics />} />
+            <Route path="plugins" element={<HelpPlugins />} />
+            <Route path="anomaly-detection" element={<HelpAnomalyDetection />} />
+            <Route path="reports" element={<HelpReports />} />
+            <Route path="troubleshooting" element={<HelpTroubleshooting />} />
+            <Route path="about" element={<HelpAbout />} />
           </Route>
         </Routes>
       </main>
