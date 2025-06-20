@@ -6,8 +6,8 @@ import DashboardPage from './pages/DashboardPage';
 import AnomalyPage from './pages/AnomalyPage';
 import PluginsPage from './pages/PluginsPage';
 import RaportPage from './pages/RaportPage';
-import SettingsPage from './pages/SettingsPage';
-import HelpPage from './pages/HelpPage';
+import SettingsPage from './pages/Settings/SettingsPage';
+import HelpPage from './pages/Help/HelpPage';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -23,8 +23,12 @@ const App: React.FC = () => {
           <Route path="/anomaly" element={<AnomalyPage />} />
           <Route path="/plugins" element={<PluginsPage />} />
           <Route path="/raport" element={<RaportPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/help" element={<HelpPage />} />
+          <Route path="/settings" element={<SettingsPage />}>
+            {/* Add here settings subpages */}
+          </Route>
+          <Route path="/help" element={<HelpPage />}>
+            {/* Add here help subpages */}
+          </Route>
         </Routes>
       </main>
     </div>
