@@ -20,20 +20,11 @@ const HelpPage = (): JSX.Element => {
   }
 
   return (
-    // Main container with flex layout to position sidebar and content
-    <div className="d-flex flex-grow-1" style={{ gap: "var(--section-margin)", height: "100%" }}>
+    <div className="d-flex flex-grow-1 gap-3 h-100">
       <Sidebar page="help" /> {/* Sidebar variant for HelpPage */}
-      <div
-        className="section-container d-flex flex-column"
-        style={{
-          padding: "48px", // Main Section padding
-          gap: "32px",
-          overflowY: "auto", // Scrollbar for overflowing content
-          height: "100%",
-          width: "100%"
-        }}>
+      <div className="section-container d-flex flex-column p-5 gap-5 h-100 w-100 overflow-auto">
         <Header title="Help & Documentation" subtitle="Learn how to use the time series analysis application effectively" />
-        <Outlet /> {/* Renders Selected Help Subpage content */}
+        <Outlet /> {/* Renders selected help subpage content */}
       </div>
     </div>
   );
