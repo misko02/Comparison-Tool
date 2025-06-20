@@ -1,0 +1,41 @@
+.file-accordion {
+  width: 100%;
+  max-width: 100%; 
+}
+
+.accordion-header {
+  width: 100%;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px
+}
+
+.accordion-content {
+  width: 100%;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.accordion-layout {
+  width: 100%;
+  box-sizing: border-box; 
+}
+
+.file-label {
+  width: 100%;
+  padding: 8px 0;
+  cursor: pointer;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  display: block;
+  box-sizing: border-box; 
+  overflow: hidden; 
+}
+
+.file-label:hover {
+  background-color: #f5f5f5;
+}
