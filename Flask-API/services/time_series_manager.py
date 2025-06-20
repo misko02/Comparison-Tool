@@ -75,15 +75,8 @@ class TimeSeriesManager:
                 raise ValueError("No timeseries data available")
                 
             for time, timeseries in self.timeseries.items():
-                if not isinstance(timeseries, dict):
-                    raise ValueError(f"Invalid timeseries data for time '{time}': {timeseries}")
-                if not category in timeseries:
-                    raise ValueError(f"Category '{category}' not found in timeseries for time '{time}'")
-                if filename not in timeseries[category]:
-                    raise ValueError(f"Filename '{filename}' not found in category '{category}' for time '{time}'")
-                if not isinstance(timeseries[category][filename], (float, int)):
-                    raise ValueError(f"Invalid data for filename '{filename}' in category '{category}' for time '{time}': {timeseries[category][filename]}")
-                timeserie[time] = timeseries[category][filename]
+                if isinstance(timeseries, dict) and category in timeseries and isinstance(timeseries.get(category), dict) and filename in timeseries[category]:
+                    timeserie[time] = timeseries[category][filename]
             return timeserie
         return self.timeseries
 

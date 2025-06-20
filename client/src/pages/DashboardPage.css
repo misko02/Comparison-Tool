@@ -19,9 +19,17 @@ body{
   background-color: #ffffff;
   overflow-y: auto;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
+  width:100%;
+  gap:16px
+
 }
+.App-inside-content{
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%}
+
 
 .App-header {
   background-color: #282c34;
@@ -60,12 +68,24 @@ button:hover,
 .custom-file-upload:hover {
   background-color: #0056b3;
 }
-
-.chart-wrapper {
+.header{
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center; /* opcjonalnie, jeśli chcesz też centrować w pionie */
-  width: 100%;
-  margin-bottom: 40px; /* opcjonalnie */
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 20px
+}
+.group-menu {
+display: flex;
+width: 256px;
+max-width: 256px;
+padding: 16px;
+flex-direction: column;
+align-items: center;
+gap: 10px;
+flex-shrink: 0;
+align-self: stretch;
+border-radius: var(--Section-Corner, 4px);
+background-color: #f8f9fa;
+
 }
