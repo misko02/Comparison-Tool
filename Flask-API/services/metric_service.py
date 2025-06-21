@@ -16,6 +16,8 @@ def calculate_basic_statistics(series: dict):
     """
     if not series or not isinstance(series, dict):
         return {"mean": np.nan, "median": np.nan, "variance": np.nan, "std_dev": np.nan}
+    if not all(isinstance(v, (int, float)) for v in series.values()):
+        return "series values must be numeric"
     try:
         # Convert the dictionary to a pandas Series
         series: pd.Series = pd.Series(series)
@@ -38,6 +40,8 @@ def calculate_autocorrelation(series: dict):
     """
     if not series or not isinstance(series, dict):
         return np.array([])
+    if any(not isinstance(v, (int, float))  for v in series.values() ):
+        return np.nan
     try:
         series: pd.Series = pd.Series(series)
         data = pd.to_numeric(series, errors='coerce').dropna().values
@@ -48,7 +52,6 @@ def calculate_autocorrelation(series: dict):
     acf_values = acf(data, nlags=1, fft=True)
     return float(acf_values[1])
 
-#JESZCZE POTRZEBNY JEST ZAKRES MIN MAX SZEREGU
 
 def calculate_coefficient_of_variation(series: dict):
     """
@@ -105,5 +108,3 @@ def calculate_pearson_correlation(series1: dict, series2: dict):
     corr, _ = pearsonr(series1, series2)
     return corr
 
-
-#POTRZEBA JESZCZE ŚREDNIE WARTOŚCI DLA WSZYSTKICH SZEREGÓW TYCH FUNKCJI def calculate_coefficient_of_variation(series: pd.Series):
