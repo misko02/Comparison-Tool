@@ -22,7 +22,7 @@ export const NavigationMenu = (): JSX.Element => {
   return (
     <div className="navigation-menu d-flex align-items-center px-3 bg-white">
       <LogoPlaceHolder />
-      {/* navItems.map transforms each array element into a TopMenuNavItem component */}{" "}
+      {/* navItems.map transforms each array element into a TopMenuNavItem component */}
       {navItems.map(item => (
         <TopMenuNavItem key={item.text} text={item.text} to={item.to} />
       ))}
