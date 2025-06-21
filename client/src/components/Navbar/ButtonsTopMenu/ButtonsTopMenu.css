@@ -1,53 +1,12 @@
 .buttons-top-menu {
-  align-items: center;
-  display: inline-flex;
-  gap: 8px;
-  height: 55px;
-  padding: 0px 24px;
-  position: relative;
-  text-decoration: none;
-  box-sizing: border-box; /* Zapobiega zmianom rozmiaru przez padding/obramowanie */
-  justify-content: center;
+  color: var(--bs-gray-600);
 }
 
-.buttons-top-menu .text {
-  color: var(--graygray-6);
-  font-family: 'Roboto', Helvetica, sans-serif;
-  font-size: 16px;
-  font-weight: 400;
-  font-variation-settings: "wght" 400; /* Rezerwuje miejsce dla grubszej czcionki */
-  font-optical-sizing: none; /* Wyłącza automatyczne skalowanie */
-  letter-spacing: 0.1px;
-  line-height: 20px;
-  position: relative;
-  white-space: nowrap;
+.buttons-top-menu:hover,
+.buttons-top-menu.active {
+  color: var(--bs-gray-900);
 }
 
-.buttons-top-menu.active-true {
-  border-bottom-style: solid;
-  border-bottom-width: 1px;
-  border-color: var(--graygray-7);
-}
-
-.buttons-top-menu.active-true .text {
-  font-family: 'Roboto', Helvetica, sans-serif;
-  font-weight: 700;
-  font-variation-settings: "wght" 700; /* Grubsza czcionka bez zmiany szerokości przycisku */
-  font-optical-sizing: none;
-  color: var(--graygray-9);
-}
-
-.buttons-top-menu:hover .text {
-  color: var(--graygray-7);}
-
-:root {
-  --graygray-1: rgba(248, 249, 250, 1);
-  --graygray-2: rgba(233, 236, 239, 1);
-  --graygray-3: rgba(222, 226, 230, 1);
-  --graygray-4: rgba(206, 212, 218, 1);
-  --graygray-5: rgba(173, 181, 189, 1);
-  --graygray-6: rgba(108, 117, 125, 1);
-  --graygray-7: rgba(73, 80, 87, 1);
-  --graygray-8: rgba(52, 58, 64, 1);
-  --graygray-9: rgba(33, 37, 41, 1);
+.buttons-top-menu.active {
+  border-bottom: 1px solid var(--bs-gray-900);
 }

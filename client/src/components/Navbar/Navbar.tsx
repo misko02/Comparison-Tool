@@ -1,6 +1,7 @@
-import { JSX } from 'react';
-import './Navbar.css';
-import { ButtonsTopMenu } from './ButtonsTopMenu/ButtonsTopMenu';
+import { JSX } from "react";
+import "./Navbar.css";
+import { ButtonsTopMenu } from "./ButtonsTopMenu/ButtonsTopMenu";
+import { LogoPlaceHolder } from "./Logo/Logo";
 
 interface NavItem {
   text: string;
@@ -19,18 +20,11 @@ export const NavigationMenu = (): JSX.Element => {
   ];
 
   return (
-    <div className="navigation-menu top">
-      <div className="logo-placeholder">Logo</div>
-      {/* navItems.map transforms each array element into a ButtonsTopMenu component */}
-      {navItems.map(
-        (item) => (
-          <ButtonsTopMenu
-            key={item.text}
-            text={item.text}
-            to={item.to}
-          />
-        )
-      )}
+    <div className="navigation-menu d-flex align-items-center px-3 bg-white">
+      <LogoPlaceHolder />
+      {/* navItems.map transforms each array element into a ButtonsTopMenu component */}      {navItems.map(item => (
+        <ButtonsTopMenu key={item.text} text={item.text} to={item.to} />
+      ))}
     </div>
   );
 };
