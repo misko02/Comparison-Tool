@@ -1,6 +1,6 @@
 import { JSX } from "react";
 import "./Navbar.css";
-import { ButtonsTopMenu } from "./ButtonsTopMenu/ButtonsTopMenu";
+import { TopMenuNavItem } from "./TopMenuNavItem/TopMenuNavItem";
 import { LogoPlaceHolder } from "./Logo/Logo";
 
 interface NavItem {
@@ -22,8 +22,9 @@ export const NavigationMenu = (): JSX.Element => {
   return (
     <div className="navigation-menu d-flex align-items-center px-3 bg-white">
       <LogoPlaceHolder />
-      {/* navItems.map transforms each array element into a ButtonsTopMenu component */}      {navItems.map(item => (
-        <ButtonsTopMenu key={item.text} text={item.text} to={item.to} />
+      {/* navItems.map transforms each array element into a TopMenuNavItem component */}{" "}
+      {navItems.map(item => (
+        <TopMenuNavItem key={item.text} text={item.text} to={item.to} />
       ))}
     </div>
   );
