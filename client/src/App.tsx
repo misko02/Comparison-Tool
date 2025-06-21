@@ -4,8 +4,7 @@ import { NavigationMenu } from './components/Navbar/Navbar';
 import DataPage from './pages/DataPage';
 import DashboardPage from './pages/DashboardPage';
 import AnomalyPage from './pages/AnomalyPage';
-import PluginsPage from './pages/PluginsPage';
-import RaportPage from './pages/RaportPage';
+import MetricsPage from './pages/MetricsPage';
 import SettingsPage from './pages/SettingsPage';
 import HelpPage from './pages/HelpPage';
 import './App.css';
@@ -18,13 +17,12 @@ const App: React.FC = () => {
       <main>
         <Routes>
           <Route path="/" element={<Navigate to="/data" replace />} /> {/* Ustawienie domyślnej strony startowej na DataPage */}
-          <Route path="/data" element={<DataPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/data" element={<DataPage />} />
+          <Route path="/metrics" element={<MetricsPage />} />
           <Route path="/anomaly" element={<AnomalyPage />} />
-          <Route path="/plugins" element={<PluginsPage />} />
-          <Route path="/raport" element={<RaportPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/help" element={<HelpPage />} />
+          <Route path="/settings" element={<SettingsPage />}/>
+          <Route path="/help" element={<HelpPage />}/>
         </Routes>
       </main>
     </div>

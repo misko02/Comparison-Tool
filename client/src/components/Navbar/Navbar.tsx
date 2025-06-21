@@ -10,13 +10,12 @@ interface NavItem {
 export const NavigationMenu = (): JSX.Element => {
   // Array with the list of menu subpages, their names, and paths
   const navItems: NavItem[] = [
-    { text: 'Data', to: '/data' },
-    { text: 'Dashboard', to: '/dashboard' },
-    { text: 'Anomaly', to: '/anomaly' },
-    { text: 'Plugins', to: '/plugins' },
-    { text: 'Raport', to: '/raport' },
-    { text: 'Settings', to: '/settings' },
-    { text: 'Help', to: '/help' },
+    { text: "Dashboard", to: "/dashboard" },
+    { text: "Data", to: "/data" },
+    { text: "Metrics", to: "/metrics" },
+    { text: "Anomaly", to: "/anomaly" },
+    { text: "Settings", to: "/settings" },
+    { text: "Help", to: "/help" }
   ];
 
   return (
