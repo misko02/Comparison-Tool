@@ -4,9 +4,15 @@ from scipy.stats import pearsonr, spearmanr, kendalltau
 from statsmodels.tsa.stattools import acf, ccf
 from dtw import dtw  
 
+def extract_series_from_dict(data:dict, category:str, filename:str) -> dict:
+    series = {}
+    for key in data.keys():
+        series[key] = data[key][category][filename]
+    return series
+
 
 # --- Metrics for single time series ---
-def calculate_basic_statistics(series: dict):
+def calculate_basic_statistics(series: dict) -> dict:
     """ 
     Calculates basic descriptive statistics for a time series.
     Args:
@@ -22,7 +28,7 @@ def calculate_basic_statistics(series: dict):
         # Convert the dictionary to a pandas Series
         series: pd.Series = pd.Series(series)
     except Exception as e:
-        return "could not convert series to pd.Series: " + str(e)
+        raise ValueError("could not convert series to pd.Series: " + str(e))
     return {
         "mean": series.mean(),
         "median": series.median(),
@@ -30,30 +36,30 @@ def calculate_basic_statistics(series: dict):
         "std_dev": series.std(ddof=0)   # ddof=0 for population standard deviation
     }
 
-def calculate_autocorrelation(series: dict):
+def calculate_autocorrelation(series: dict) -> float:
     """
     Calculates the autocorrelation function (ACF) for a time series.
     Args:
         series (dict): Timeseries.
     Returns:
-        np.ndarray: Array of ACF values.
+        float: Autocorrelation value;
     """
     if not series or not isinstance(series, dict):
-        return np.array([])
-    if any(not isinstance(v, (int, float))  for v in series.values() ):
+        return np.nan
+    if any(not isinstance(v, (int, float)) or np.isnan(v)  for v in series.values() ):
         return np.nan
     try:
         series: pd.Series = pd.Series(series)
         data = pd.to_numeric(series, errors='coerce').dropna().values
     except Exception as e:
-        return "could not convert series to pd.Series: " + str(e)
+        raise ValueError("could not convert series to pd.Series: " + str(e))
     # acf from statsmodels returns the autocorrelation values for lags 0 to nlags
     # we use nlags=1 to get the first lag autocorrelation
     acf_values = acf(data, nlags=1, fft=True)
     return float(acf_values[1])
 
 
-def calculate_coefficient_of_variation(series: dict):
+def calculate_coefficient_of_variation(series: dict) -> float:
     """
     Calculates the coefficient of variation (CV).
     Args:
@@ -63,15 +69,17 @@ def calculate_coefficient_of_variation(series: dict):
     """
     if not series or not isinstance(series, dict):
         return np.nan
+    if (any(not isinstance(v, (int, float)) or np.isnan(v) for v in series.values())):
+        return np.nan
     try:
         series: pd.Series = pd.Series(series)
     except Exception as e:
-        return "could not convert series to pd.Series: " + str(e)
+        raise ValueError("could not convert series to pd.Series: " + str(e))
     if series.mean() == 0:
         return np.nan  # Avoid division by zero
-    return series.std(ddof=0) / series.mean()
+    return series.std()*100 / series.mean()
 
-def calculate_iqr(series: dict):
+def calculate_iqr(series: dict) -> float:
     """
     Calculates the interquartile range (IQR).
     Args:
@@ -81,15 +89,17 @@ def calculate_iqr(series: dict):
     """
     if not series or not isinstance(series, dict):
         return np.nan
+    if (any(not isinstance(v, (int, float)) or np.isnan(v) for v in series.values())):
+        return np.nan
     try:
         series: pd.Series = pd.Series(series)
     except Exception as e:
-        return np.nan
+        raise ValueError("could not convert series to pd.Series: " + str(e))
     return series.quantile(0.75) - series.quantile(0.25)
 
 
 # --- Metryki dla porównywania wielu szeregów ---
-def calculate_pearson_correlation(series1: dict, series2: dict):
+def calculate_pearson_correlation(series1: dict, series2: dict) -> float:
     """
     Calculates the Pearson correlation coefficient between two series.
     Args:
@@ -100,11 +110,16 @@ def calculate_pearson_correlation(series1: dict, series2: dict):
     """
     if not series1 or not series2 or len(series1) != len(series2):
         return np.nan
+    if not isinstance(series1, dict) or not isinstance(series2, dict):
+        return np.nan
+    if any(not isinstance(v, (int, float)) or np.isnan(v) for v in series1.values()) or \
+       any(not isinstance(v, (int, float)) or np.isnan(v) for v in series2.values()):
+        return np.nan
     try:
         series1: pd.Series = pd.Series(series1)
         series2: pd.Series = pd.Series(series2)
     except Exception as e:
-        return "could not convert series to pd.Series: " + str(e)
+        raise ValueError("could not convert series to pd.Series: " + str(e))
     corr, _ = pearsonr(series1, series2)
     return corr
 
