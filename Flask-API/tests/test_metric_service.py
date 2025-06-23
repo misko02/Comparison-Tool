@@ -6,24 +6,66 @@ from services.metric_service import *
 
 class TestExtractSeriesFromDict(unittest.TestCase):
     def test_extract_series(self):
+        
+        # Arrange
         data = {
             "2023-01-01": {"category1": {"file1": 1, "file2": 2}},
             "2023-01-02": {"category1": {"file1": 3, "file2": 4}},
             "2023-01-03": {"category1": {"file1": 5, "file2": 6}}
         }
+        
+        # Act
+        result = extract_series_from_dict(data, "category1", "file1")
+        
+        # Assert
         expected = {
             "2023-01-01": 1,
             "2023-01-02": 3,
             "2023-01-03": 5
         }
-        result = extract_series_from_dict(data, "category1", "file1")
+        
         self.assertEqual(result, expected)
 
     def test_empty_data(self):
-        result = extract_series_from_dict({}, "category", "file")
+        # Arrange
+        data = {}
+        
+        # Act
+        result = extract_series_from_dict(data, "category", "file")
+        
+        # Assert
         self.assertEqual(result, {})
 
-
+    def test_invalid_data_type(self):
+        # Arrange
+        data = "invalid_data"
+        # Act & Assert
+        with self.assertRaises(ValueError):
+            extract_series_from_dict(data, "category", "file")
+            
+    def test_invalid_category_type(self):
+        
+        # Arrange
+        data = {
+            "2023-01-01": {"category1": {"file1": 1, "file2": 2}},
+            "2023-01-02": {"category1": {"file1": 3, "file2": 4}}
+        }
+        
+        # Act & Assert
+        with self.assertRaises(ValueError):
+            extract_series_from_dict(data, 123, "file1")
+        
+    def test_invalid_file_stype(self):
+        
+        # Arrange
+        data = {
+            "2023-01-01": {"category1": {"file1": 1, "file2": 2}},
+            "2023-01-02": {"category1": {"file1": "invalid", "file2": 4}}
+        }
+        
+        # Act & Assert
+        with self.assertRaises(ValueError):
+            extract_series_from_dict(data, "category1", "file1")
 
 class TestCalculateBasicStatistics(unittest.TestCase):
     def test_typical_series(self):
