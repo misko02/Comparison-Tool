@@ -1,0 +1,24 @@
+.sidebar {
+  width: 280px;
+  height: 100%; /* Matches the height of the parent container */
+  overflow-y: auto; /* Enables vertical scrolling if content overflows */
+  flex-shrink: 0; /* Prevents sidebar from shrinking in flex layout */
+  padding: 16px !important;
+}
+
+.sidebar-item {
+  height: 48px;
+  transition: all 0.2s ease-in-out; /* Smooth transition for background and color changes */
+  background-color: transparent !important;
+  color: var(--bs-gray-600) !important;
+}
+
+.sidebar-item.active {
+  background-color: var(--bs-gray-200) !important;
+  color: var(--bs-gray-900) !important;
+}
+
+.sidebar-item:hover:not(.active) {
+  background-color: var(--bs-gray-100) !important;
+  color: var(--bs-gray-700) !important;
+}
