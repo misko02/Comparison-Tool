@@ -1,9 +1,4 @@
-from unittest import result
-import numpy as np
-
-
 class TimeSeriesManager:
-
     """
     Service class to manage time series data.
 
@@ -15,7 +10,7 @@ class TimeSeriesManager:
     Returns:
         bool: True if added successfully, False otherwise
     """
-    
+
     def __init__(self):
         self.timeseries = {}
 
@@ -38,9 +33,9 @@ class TimeSeriesManager:
         """
         if isinstance(data, dict):
             self.timeseries[time] = data
-            for time, categories in data.items():
+            for timeserie, categories in data.items():
                 if not isinstance(categories, dict):
-                    raise ValueError(f"Invalid category '{time}': {categories}")
+                    raise ValueError(f"Invalid category '{timeserie}': {categories}")
                 for category, files in categories.items():
                     if not isinstance(files, (float, int)):
                         raise ValueError(f"Invalid file data for category '{category}': {files}")
@@ -58,19 +53,19 @@ class TimeSeriesManager:
         Returns:
             dict: Timeseries data for the specified time or all timeseries if no key is provided
         """
-        
+
         result = {}
         if not self.timeseries:
             return result
         if time and not isinstance(time, str):
             raise ValueError(f"Invalid time format: {time}. Expected a string.")
-        
+
         if filename and not isinstance(filename, str):
             raise ValueError(f"Invalid filename format: {filename}. Expected a string.")
-        
+
         if category and not isinstance(category, str):
             raise ValueError(f"Invalid category format: {category}. Expected a string.")
-        
+
         for timeseries, categories in self.timeseries.items():
             if time and timeseries != time:
                 continue
@@ -87,9 +82,12 @@ class TimeSeriesManager:
 
         return result
     def clear_timeseries(self):
-        
+
         """
         Clear all timeseries data.
         """
-        
-        self.timeseries.clear()
+        try:
+            self.timeseries.clear()
+            return {"message": "All timeseries data cleared successfully."}, 200
+        except Exception as e:
+            return {"error": str(e)}, 500

@@ -1,4 +1,4 @@
-# This is documentation of Flask API for Comparison Tool Aplication
+# This is documentation of Flask API for Comparison Tool Application
 
 ## File Structure
 
