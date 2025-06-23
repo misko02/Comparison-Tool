@@ -4,10 +4,42 @@ from scipy.stats import pearsonr, spearmanr, kendalltau
 from statsmodels.tsa.stattools import acf, ccf
 from dtw import dtw  
 
+
 def extract_series_from_dict(data:dict, category:str, filename:str) -> dict:
+    """Extracts a time series from a nested dictionary structure.
+
+    Args:
+        data (dict): The input data dictionary.
+        category (str): The category under which the time series is stored.
+        filename (str): The specific filename (or key) for the time series.
+
+    Returns:
+        dict: A dictionary containing the extracted time series.
+    """
+    if not isinstance(data, dict) or not isinstance(category, str) or not isinstance(filename, str):
+        raise ValueError("Invalid data structure")
+    
     series = {}
     for key in data.keys():
-        series[key] = data[key][category][filename]
+        #Error handling 
+        if not isinstance(data[key], dict):
+            raise ValueError(f"Invalid data structure at key \'{key}\': expected a dictionary")
+        
+        if category not in data[key] or not isinstance(data[key][category], dict):
+            raise ValueError(f"Category \'{category}\' not found in data at key \'{key}\' or bad structure")
+        
+        if filename not in data[key][category] or not isinstance(data[key][category][filename], (int, float)):
+            raise ValueError(f"Filename \'{filename}\' not found in category \'{category}\' at key \'{key}\' or bad structure")
+        
+        if not isinstance(data[key][category][filename], (int, float)):
+            raise ValueError(f"Unsupported data type for key \'{key}\': {type(data[key][category][filename])}")
+        
+        # extracting the value and converting it to float
+        try:
+            series[key] = float(data[key][category][filename])
+        except (ValueError, TypeError):
+            raise ValueError(f"Invalid value for key \'{key}\': {data[key][category][filename]}")
+        
     return series
 
 
