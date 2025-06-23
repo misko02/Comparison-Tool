@@ -1,38 +1,39 @@
 import { JSX } from "react";
+import { Card, Alert, Row, Col, Badge } from "react-bootstrap";
 
 export const HelpDataTypes = (): JSX.Element => {
   return (
-    <div className="card text-start">
-      <div className="card-header">
-        <strong className="fs-4">Data types and formats</strong>
-      </div>
-      <div className="card-body">
-        <p className="card-text">The application supports time series data in CSV and JSON formats. Your data should contain timestamp columns and numerical measurement values.</p>
+    <Card className="text-start">
+      <Card.Header>
+        <Card.Title as="h4" className="mb-0">Data types and formats</Card.Title>
+      </Card.Header>
+      <Card.Body>
+        <Card.Text>The application supports time series data in CSV and JSON formats. Your data should contain timestamp columns and numerical measurement values.</Card.Text>
 
-        <div className="row mb-3">
+        <Row className="mb-3">
           {/* CSV Format */}
-          <div className="col-md-6">
-            <div className="alert alert-light p-3 h-100" role="alert">
+          <Col md={6}>
+            <Alert variant="light" className="h-100">
               <div className="d-flex align-items-center mb-3">
-                <h4 className="alert-heading mb-0 me-2">CSV Format</h4>
-                <span className="badge bg-success">Supported</span>
+                <Alert.Heading className="mb-0 me-2">CSV Format</Alert.Heading>
+                <Badge bg="success">Supported</Badge>
               </div>
               <p>CSV with headers, containing timestamp and numerical data columns in any order.</p>
-            </div>
-          </div>
+            </Alert>
+          </Col>
 
           {/* JSON Format */}
-          <div className="col-md-6">
-            <div className="alert alert-light p-3 h-100" role="alert">
+          <Col md={6}>
+            <Alert variant="light" className="h-100">
               <div className="d-flex align-items-center mb-3">
-                <h4 className="alert-heading mb-0 me-2">JSON Format</h4>
-                <span className="badge bg-success">Supported</span>
+                <Alert.Heading className="mb-0 me-2">JSON Format</Alert.Heading>
+                <Badge bg="success">Supported</Badge>
               </div>
               <p>Flat JSON array of objects with timestamp and numerical value fields.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+            </Alert>
+          </Col>
+        </Row>
+      </Card.Body>
+    </Card>
   );
 };

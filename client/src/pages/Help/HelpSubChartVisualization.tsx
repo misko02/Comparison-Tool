@@ -1,15 +1,16 @@
 import { JSX } from "react";
+import { Card, Alert } from "react-bootstrap";
 
 export const HelpChartVisualization = (): JSX.Element => {
   return (
-    <div className="card text-start">
-      <div className="card-header">
-        <strong className="fs-4">Chart visualization</strong>
-      </div>
-      <div className="card-body">
-        <p className="card-text">Interactive charts for exploring time series data with zoom, pan, range selection, dual Y-axes, and series toggling.</p>
-        <div className="alert alert-success" role="alert">
-          <h4 className="alert-heading">Chart Features:</h4>
+    <Card className="text-start">
+      <Card.Header>
+        <Card.Title as="h4" className="mb-0">Chart visualization</Card.Title>
+      </Card.Header>
+      <Card.Body>
+        <Card.Text>Interactive charts for exploring time series data with zoom, pan, range selection, dual Y-axes, and series toggling.</Card.Text>
+        <Alert variant="success">
+          <Alert.Heading>Chart Features:</Alert.Heading>
           <ol>
             <li>Zoom and pan using mouse or touch input.</li>
             <li>Range selector for 1 day, 1 week, 1 month, or full data range.</li>
@@ -22,8 +23,8 @@ export const HelpChartVisualization = (): JSX.Element => {
             <li>Hover spikes for precise X and Y value inspection.</li>
             <li>Multiple data series with distinct colors and horizontal legend.</li>
           </ol>
-        </div>
-      </div>
-    </div>
+        </Alert>
+      </Card.Body>
+    </Card>
   );
 };

@@ -2,6 +2,7 @@ import { JSX, useEffect } from "react";
 import { Outlet, Navigate, useLocation } from "react-router-dom";
 import { Sidebar } from "../../components/SideBar/Sidebar";
 import { Header } from "../../components/Header";
+import { Col, Container } from "react-bootstrap";
 
 const HelpPage = (): JSX.Element => {
   const location = useLocation();
@@ -20,13 +21,16 @@ const HelpPage = (): JSX.Element => {
   }
 
   return (
-    <div className="d-flex flex-grow-1 gap-3 h-100">
-      <Sidebar page="help" /> {/* Sidebar variant for HelpPage */}
-      <div className="section-container d-flex flex-column p-5 gap-5 h-100 w-100 overflow-auto">
+    <Container fluid className="d-flex flex-grow-1 gap-3 h-100 p-0">
+      <Col xs="auto">
+        <Sidebar page="help" /> {/* Sidebar variant for HelpPage */}
+      </Col>
+
+      <Col className="section-container d-flex flex-column p-5 gap-5 h-100 w-100 overflow-auto">
         <Header title="Help & Documentation" subtitle="Learn how to use the time series analysis application effectively" />
         <Outlet /> {/* Renders selected help subpage content */}
-      </div>
-    </div>
+      </Col>
+    </Container>
   );
 };
 
