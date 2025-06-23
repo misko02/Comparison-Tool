@@ -10,6 +10,15 @@
     border-radius: 10px;
 }
 
+.Metrics-header {
+    text-align: left;
+    margin-bottom: 10px;
+    width: 100%;
+}
+.Metric-group {
+    width: 100%;
+    margin-bottom: 20px;
+}
 .Metrics-container{
     margin-top: 20px;
     display: flex;

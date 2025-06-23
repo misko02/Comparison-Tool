@@ -1,28 +1,33 @@
 // src/services/uploadTimeSeries.ts
-
 export const sendProcessedTimeSeriesData = async (
-    processedData: Record<string, any[]>,
-    onUploadsFinished?: (success: boolean) => void
+  data: Record<string, any>, 
+  callback?: (success: boolean) => void
 ) => {
-    if (Object.keys(processedData).length === 0) {
-        onUploadsFinished?.(false);
+  if (Object.keys(data).length === 0) {
+        callback?.(false);
         return;
     }
+  try {
+    const response = await fetch('/upload-timeseries', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
 
-    try {
-        const resp = await fetch('/upload-timeseries', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(processedData),
-        });
-        if (!resp.ok) {
-            const errorText = await resp.text();
-            console.error("Upload failed on backend:", errorText);
-            throw new Error(errorText);
-        }
-        onUploadsFinished?.(true);
-    } catch (err) {
-        console.error("Error sending processed time series data:", err);
-        onUploadsFinished?.(false);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Server error:', errorText);
+      throw new Error(errorText);
     }
+
+    const result = await response.json();
+    callback?.(true);
+    return result;
+  } catch (error) {
+    console.error('Error uploading time series data:', error);
+    callback?.(false);
+    throw error;
+  }
 };

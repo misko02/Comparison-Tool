@@ -1,0 +1,12 @@
+.top-menu-nav-item {
+  color: var(--bs-gray-600);
+}
+
+.top-menu-nav-item:hover,
+.top-menu-nav-item.active {
+  color: var(--bs-gray-900);
+}
+
+.top-menu-nav-item.active {
+  border-bottom: 1px solid var(--bs-gray-900);
+}
