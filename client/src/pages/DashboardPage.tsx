@@ -14,7 +14,7 @@ import {extractFilenamesPerCategory} from "../services/extractFilenamesPerCatego
 import {fetchAllMedians} from "../services/fetchAllMedians";
 import {fetchAllVariances} from "../services/fetchAllVariances";
 import {fetchAllStdDevs} from "../services/fetchAllStdDevs";
-import { Form } from 'react-bootstrap';
+import Select from'../components/Select/select';
 import Dropdown from '../components/Dropdown/Dropdown';
 import {fetchAllAutoCorrelations} from "../services/fetchAllAutoCorrelations";
 import metrics from "../components/Metric/Metrics";
@@ -319,46 +319,25 @@ return (
       <div className="header">
         <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
           {Object.keys(filenamesPerCategory).length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <Form.Label htmlFor="category-select" className="mb-2" style={{ marginRight: '10px' }}>
-                Main Y-Axis
-              </Form.Label>
-              <Form.Select
+            <>
+              <Select
                 id="category-select"
-                aria-label="Main Y-axis group"
-                style={{ width: '200px' }}
+                label="Main Y-Axis"
+                selected={selectedCategory || Object.keys(filenamesPerCategory)[0]}
+                categories={Object.keys(filenamesPerCategory)}
                 onChange={handleDropdownChange}
-                value={selectedCategory || Object.keys(filenamesPerCategory)[0]}
-              >
-                {Object.keys(filenamesPerCategory).map((cat) => (
-                  <option key={cat} value={cat} disabled={cat === secondaryCategory}>
-                    {cat}
-                  </option>
-                ))}
-              </Form.Select>
-            </div>
-          )}
-
-          {Object.keys(filenamesPerCategory).length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <Form.Label htmlFor="secondary-category-select" className="mb-2" style={{ marginRight: '10px' }}>
-                Second Y-Axis
-              </Form.Label>
-              <Form.Select
+                disabledCategory={secondaryCategory ?? undefined}
+              />
+              <Select
                 id="secondary-category-select"
-                aria-label="Second Y-axis group"
-                style={{ width: '200px' }}
+                label="Second Y-Axis"
+                selected={secondaryCategory || ''}
+                categories={Object.keys(filenamesPerCategory)}
                 onChange={handleSecondaryDropdownChange}
-                value={secondaryCategory || ''}
-              >
-                <option value="">-- None --</option>
-                {Object.keys(filenamesPerCategory).map((cat) => (
-                  <option key={cat} value={cat} disabled={cat === selectedCategory}>
-                    {cat}
-                  </option>
-                ))}
-              </Form.Select>
-            </div>
+                disabledCategory={selectedCategory ?? undefined}
+                allowNoneOption
+              />
+            </>
           )}
         </div>
 
