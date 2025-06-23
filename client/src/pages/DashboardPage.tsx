@@ -14,7 +14,7 @@ import {extractFilenamesPerCategory} from "../services/extractFilenamesPerCatego
 import {fetchAllMedians} from "../services/fetchAllMedians";
 import {fetchAllVariances} from "../services/fetchAllVariances";
 import {fetchAllStdDevs} from "../services/fetchAllStdDevs";
-import { Form } from 'react-bootstrap';
+import Select from'../components/Select/select';
 import Dropdown from '../components/Dropdown/Dropdown';
 import {fetchAllAutoCorrelations} from "../services/fetchAllAutoCorrelations";
 import metrics from "../components/Metric/Metrics";
@@ -313,128 +313,107 @@ useEffect(() => {
 
 
 return (
-  <div className="App">
-    <main className="App-main-content">
-      <div className="App-inside-content">
-      <div className="header">
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          {Object.keys(filenamesPerCategory).length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <Form.Label htmlFor="category-select" className="mb-2" style={{ marginRight: '10px' }}>
-                Main Y-Axis
-              </Form.Label>
-              <Form.Select
-                id="category-select"
-                aria-label="Main Y-axis group"
-                style={{ width: '200px' }}
-                onChange={handleDropdownChange}
-                value={selectedCategory || Object.keys(filenamesPerCategory)[0]}
-              >
-                {Object.keys(filenamesPerCategory).map((cat) => (
-                  <option key={cat} value={cat} disabled={cat === secondaryCategory}>
-                    {cat}
-                  </option>
-                ))}
-              </Form.Select>
-            </div>
-          )}
-
-          {Object.keys(filenamesPerCategory).length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <Form.Label htmlFor="secondary-category-select" className="mb-2" style={{ marginRight: '10px' }}>
-                Second Y-Axis
-              </Form.Label>
-              <Form.Select
-                id="secondary-category-select"
-                aria-label="Second Y-axis group"
-                style={{ width: '200px' }}
-                onChange={handleSecondaryDropdownChange}
-                value={secondaryCategory || ''}
-              >
-                <option value="">-- None --</option>
-                {Object.keys(filenamesPerCategory).map((cat) => (
-                  <option key={cat} value={cat} disabled={cat === selectedCategory}>
-                    {cat}
-                  </option>
-                ))}
-              </Form.Select>
-            </div>
-          )}
-        </div>
-
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <label htmlFor="file-upload" className={`custom-file-upload ${isLoading ? 'disabled' : ''}`}>
-            {isLoading ? 'Loading...' : 'Upload files'}
-          </label>
-          <input
-            id="file-upload"
-            type="file"
-            multiple
-            accept=".json"
-            onChange={handleFileUpload}
-            style={{ display: 'none' }}
-            disabled={isLoading}
-          />
-          
-          <button
-            onClick={handleReset}
-            className="custom-file-upload"
-            disabled={isLoading}
-          >
-            Reset data
-          </button>
-        </div>
-      </div>
-
-      {error && <p className="App-error" style={{ color: 'red', textAlign: 'center' }}>Error: {error}</p>}
-
-
-
-
-      <div className="Chart-container">
-        {isLoading && Object.keys(chartData).length === 0 && <p style={{ textAlign: 'center', padding: '30px' }}>Loading chart...</p>}
-        {!isLoading && Object.keys(chartData).length === 0 && !error && (
-          <p style={{ textAlign: 'center', padding: '30px' }}>Load data to visualize</p>
-        )}
-        {!isLoading && Object.keys(chartData).length > 0 && (
-          <div className="chart-wrapper">
-            <MyChart 
-              primaryData={filteredData.primary}
-              secondaryData={filteredData.secondary || undefined}
-              title="Time Series Analysis"
-            />
+  <div className="d-flex text-center min-vh-100">
+    <main className="App-main-content flex-grow-1 bg-white d-flex align-items-start w-100 gap-5 rounded">
+      <div className="d-flex flex-column gap-3 w-100">
+        <div className="d-flex justify-content-between align-items-center w-100 mb-3">
+          <div className="d-flex align-items-center gap-3">
+            {Object.keys(filenamesPerCategory).length > 0 && (
+              <>
+                <Select
+                  id="category-select"
+                  label="Main Y-Axis"
+                  selected={selectedCategory || Object.keys(filenamesPerCategory)[0]}
+                  categories={Object.keys(filenamesPerCategory)}
+                  onChange={handleDropdownChange}
+                  disabledCategory={secondaryCategory ?? undefined}
+                />
+                <Select
+                  id="secondary-category-select"
+                  label="Second Y-Axis"
+                  selected={secondaryCategory || ''}
+                  categories={Object.keys(filenamesPerCategory)}
+                  onChange={handleSecondaryDropdownChange}
+                  disabledCategory={selectedCategory ?? undefined}
+                  allowNoneOption
+                />
+              </>
+            )}
           </div>
-        )}
-      </div>
+
+          <div className="d-flex align-items-center gap-3">
+            <label htmlFor="file-upload" className={`custom-file-upload btn btn-primary rounded p-2 px-3 text-center ${isLoading ? 'disabled' : ''}`}>
+              {isLoading ? 'Loading...' : 'Upload files'}
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              multiple
+              accept=".json"
+              onChange={handleFileUpload}
+              className="d-none"
+              disabled={isLoading}
+            />
+            
+            <button
+              onClick={handleReset}
+              className="custom-file-upload btn btn-primary rounded p-2 px-3 text-center "
+              disabled={isLoading}
+            >
+              Reset data
+            </button>
+          </div>
+        </div>
+
+        {error && <p className="text-danger text-center">Error: {error}</p>}
+
+
+
+
+        <div className="Chart-container">
+          {isLoading && Object.keys(chartData).length === 0 && <p className="text-center p-4">Loading chart...</p>}
+          {!isLoading && Object.keys(chartData).length === 0 && !error && (
+            <p className="text-center p-4">Load data to visualize</p>
+          )}
+          {!isLoading && Object.keys(chartData).length > 0 && (
+            <div className="chart-wrapper">
+              <MyChart 
+                primaryData={filteredData.primary}
+                secondaryData={filteredData.secondary || undefined}
+                title="Time Series Analysis"
+              />
+            </div>
+          )}
+        </div>
         {Object.keys(groupedMetrics).length > 0 && (
           <Metrics groupedMetrics={groupedMetrics} />
         )}
-      <a
-        className="App-link"
-        href="https://github.com/misko02/Comparison-Tool"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Check repository
-      </a>
+        <a
+          className="App-link"
+          href="https://github.com/misko02/Comparison-Tool"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Check repository
+        </a>
 
-      <DataImportPopup
-        show={isPopupOpen}
-        onHide={handlePopupClose}
-        files={selectedFiles}
-        onComplete={handlePopupComplete}
-      />
+        <DataImportPopup
+          show={isPopupOpen}
+          onHide={handlePopupClose}
+          files={selectedFiles}
+          onComplete={handlePopupComplete}
+        />
       </div>
-      <div className='group-menu'>
+      <div className='group-menu d-flex flex-column align-items-center p-3 rounded'>
         <h4>Groups</h4>
         {Object.entries(filenamesPerCategory).map(([category, files]) => (
         <Dropdown
           key={category}
           category={category}
           files={files}
-          onFileClick={(file) => console.log(`Clicked file: ${file}`)}
+          onFileClick={() => {}}
         />
-      ))}
+        ))}
       </div>
     </main>
   </div>
