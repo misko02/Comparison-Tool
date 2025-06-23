@@ -381,7 +381,10 @@ if (flattenedDataArray.length > 0) {
           }
 
           // Add value for this file, converting it to a number
-          result[isoDateString][group.name][fileKey] = parseFloat(row[column]);
+          const value = row[column]
+          if(!isNaN(parseFloat(value))){
+            result[isoDateString][group.name][fileKey] = parseFloat(row[column]);
+          }
         });
       });
     });
