@@ -313,8 +313,8 @@ useEffect(() => {
 
 
 return (
-  <div className="d-flex text-center min-vh-100">
-    <main className="App-main-content flex-grow-1 bg-white d-flex align-items-start w-100 gap-5 rounded">
+  <div className="d-flex" style={{ gap: "16px" }}>
+    <div className="App-main-content flex-grow-1 d-flex align-items-start w-100 rounded">
       <div className="d-flex flex-column gap-3 w-100">
         <div className="d-flex justify-content-between align-items-center w-100 mb-3">
           <div className="d-flex align-items-center gap-3">
@@ -331,7 +331,7 @@ return (
                 <Select
                   id="secondary-category-select"
                   label="Second Y-Axis"
-                  selected={secondaryCategory || ''}
+                  selected={secondaryCategory || ""}
                   categories={Object.keys(filenamesPerCategory)}
                   onChange={handleSecondaryDropdownChange}
                   disabledCategory={selectedCategory ?? undefined}
@@ -340,82 +340,41 @@ return (
               </>
             )}
           </div>
-
           <div className="d-flex align-items-center gap-3">
-            <label htmlFor="file-upload" className={`custom-file-upload btn btn-primary rounded p-2 px-3 text-center ${isLoading ? 'disabled' : ''}`}>
-              {isLoading ? 'Loading...' : 'Upload files'}
+            <label htmlFor="file-upload" className={`custom-file-upload btn btn-primary rounded p-2 px-3 text-center ${isLoading ? "disabled" : ""}`}>
+              {isLoading ? "Loading..." : "Upload files"}
             </label>
-            <input
-              id="file-upload"
-              type="file"
-              multiple
-              accept=".json"
-              onChange={handleFileUpload}
-              className="d-none"
-              disabled={isLoading}
-            />
-            
-            <button
-              onClick={handleReset}
-              className="custom-file-upload btn btn-primary rounded p-2 px-3 text-center "
-              disabled={isLoading}
-            >
+            <input id="file-upload" type="file" multiple accept=".json" onChange={handleFileUpload} className="d-none" disabled={isLoading} />
+            <button onClick={handleReset} className="custom-file-upload btn btn-primary rounded p-2 px-3 text-center" disabled={isLoading}>
               Reset data
             </button>
           </div>
         </div>
-
         {error && <p className="text-danger text-center">Error: {error}</p>}
-
-
-
-
-        <div className="Chart-container">
+        <div className="Chart-container section-container">
           {isLoading && Object.keys(chartData).length === 0 && <p className="text-center p-4">Loading chart...</p>}
-          {!isLoading && Object.keys(chartData).length === 0 && !error && (
-            <p className="text-center p-4">Load data to visualize</p>
-          )}
+          {!isLoading && Object.keys(chartData).length === 0 && !error && <p className="text-center p-4">Load data to visualize</p>}
           {!isLoading && Object.keys(chartData).length > 0 && (
             <div className="chart-wrapper">
-              <MyChart 
-                primaryData={filteredData.primary}
-                secondaryData={filteredData.secondary || undefined}
-                title="Time Series Analysis"
-              />
+              <MyChart primaryData={filteredData.primary} secondaryData={filteredData.secondary || undefined} title="Time Series Analysis" />
             </div>
           )}
         </div>
         {Object.keys(groupedMetrics).length > 0 && (
-          <Metrics groupedMetrics={groupedMetrics} />
+          <div className="section-container" style={{ padding: "16px" }}>
+            <Metrics groupedMetrics={groupedMetrics} />
+          </div>
         )}
-        <a
-          className="App-link"
-          href="https://github.com/misko02/Comparison-Tool"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Check repository
-        </a>
-
-        <DataImportPopup
-          show={isPopupOpen}
-          onHide={handlePopupClose}
-          files={selectedFiles}
-          onComplete={handlePopupComplete}
-        />
+        <DataImportPopup show={isPopupOpen} onHide={handlePopupClose} files={selectedFiles} onComplete={handlePopupComplete} />
       </div>
-      <div className='group-menu d-flex flex-column align-items-center p-3 rounded'>
-        <h4>Groups</h4>
-        {Object.entries(filenamesPerCategory).map(([category, files]) => (
-        <Dropdown
-          key={category}
-          category={category}
-          files={files}
-          onFileClick={() => {}}
-        />
-        ))}
-      </div>
-    </main>
+    </div>
+    <div className="section-container group-menu d-flex flex-column align-items-center p-3 rounded">
+      <h4>Groups</h4>
+      {Object.entries(filenamesPerCategory).map(([category, files]) => (
+        <Dropdown key={category} category={category} files={files} onFileClick={() => {}} />
+      ))}
+    </div>
   </div>
-);}
+);
+}
 export default DashboardPage;

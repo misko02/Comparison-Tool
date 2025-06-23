@@ -72,37 +72,48 @@ const DataPage: React.FC = () => {
   ).filter(Boolean);
 
   return (
-    <div className="container-fluid vh-100 d-flex flex-column bg-light">
+    <div className="h-100 px-0">
       {error && <p className="text-danger text-center">Error: {error}</p>}
-
-      <div className="row flex-grow-1" style={{ minHeight: 0 }}>
+      <div
+        className="row g-3 h-100 mx-0"
+        style={{
+          minHeight: "calc(100vh - var(--nav-height) - 2 * var(--section-margin))"
+        }}>
         {/* Lewa część - lista plików */}
-        <div className="col-3 d-flex flex-column overflow-auto p-3 bg-white border-end">
-          <h3>Available Files</h3>
-          {uniqueFiles.length === 0 && !error ? (
-            <p className="text-center py-4">Loading data...</p>
-          ) : (
-            <div className="list-group">
-              {uniqueFiles.map((file) => (
-                <button
-                  key={file}
-                  onClick={() => setSelectedTable(file)}
-                  className={`list-group-item list-group-item-action ${selectedTable === file ? 'list-group-item-light' : ''}`}
-                >
-                  {file}
-                </button>
-              ))}
-            </div>
-          )}
+        <div className="col-3 px-2">
+          <div className="section-container d-flex flex-column p-3 h-100">
+            <h3 className="mb-3">Available Files</h3>
+            {uniqueFiles.length === 0 && !error ? (
+              <div className="d-flex align-items-center justify-content-center flex-grow-1">
+                <p className="text-center text-muted">Loading data...</p>
+              </div>
+            ) : (
+              <div className="list-group flex-grow-1" style={{ overflow: "auto" }}>
+                {uniqueFiles.map(file => (
+                  <button key={file} onClick={() => setSelectedTable(file)} className={`list-group-item list-group-item-action ${selectedTable === file ? "active" : ""}`}>
+                    {file}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Prawa część - DataTable */}
-        <div className="col-9 d-flex flex-column p-3 bg-white" style={{ overflow: 'auto', minHeight: 0 }}>
-          {selectedTable ? (
-            <DataTable data={selectedData} title={selectedTable} />
-          ) : (
-            <p className="text-center py-4">No file selected.</p>
-          )}
+        <div className="col-9 px-2">
+          <div className="section-container d-flex flex-column p-3 h-100">
+            {selectedTable ? (
+              <DataTable data={selectedData} title={selectedTable} />
+            ) : (
+              <div className="d-flex align-items-center justify-content-center flex-grow-1">
+                <div className="text-center text-muted">
+                  <i className="bi bi-file-earmark-text display-1 mb-3"></i>
+                  <p>No file selected.</p>
+                  <small>Select a file from the list to view its data</small>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

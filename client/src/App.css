@@ -8,16 +8,19 @@ html, body {
 
 .App {
   text-align: center;
-  height: 100vh; /* Match window height - scroll will be within other components*/
+  height: auto;
   background-color: var(--bs-gray-200);
   display: flex;
   flex-direction: column;
+  
 }
 
 main {
   flex: 1;
   padding: var(--section-margin);
-  height: calc(100vh - 56px - 2 * var(--section-margin)); /* Include padding and Navbar Height*/
+  overflow-y: auto;
+  min-height: calc(100vh - var(--nav-height));
+  
 }
 
 h1 {
@@ -34,6 +37,7 @@ p {
 :root {
   --section-margin: 16px;
   --border-radius: 8px;
+  --nav-height: 48px;
 }
 
 .custom-rounded {
