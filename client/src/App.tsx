@@ -25,7 +25,7 @@ const App: React.FC = () => {
       <NavigationMenu />
       <main>
         <Routes>
-          <Route path="/" element={<Navigate to="/data" replace />} /> {/* Ustawienie domyślnej strony startowej na DataPage */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} /> {/* Ustawienie domyślnej strony startowej na DashboardPage */}
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/data" element={<DataPage />} />
           <Route path="/metrics" element={<MetricsPage />} />

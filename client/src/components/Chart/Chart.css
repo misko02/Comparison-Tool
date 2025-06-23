@@ -4,17 +4,25 @@
   padding: 20px;
   border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  display: block;
-}
-
-.chart-wrapper {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
-  width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
+.chart-wrapper {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Ensure Plotly chart respects parent container */
+.js-plotly-plot,
+.plot-container,
+.main-svg {
+  width: 100% !important;
+  box-sizing: border-box;
+}
 
 button,
 .button {
