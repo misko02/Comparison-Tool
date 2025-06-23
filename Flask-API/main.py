@@ -179,7 +179,6 @@ def add_timeseries():
     if not isinstance(data, dict):
         logger.error("Invalid data format: Expected a JSON object with keys as identifiers")
         return jsonify({"error": "Expected a JSON object with keys as identifiers"}), 400
-
     current_timeseries = timeseries_manager.timeseries
     for time, values in data.items():
         if not isinstance(values, dict):
@@ -187,7 +186,7 @@ def add_timeseries():
             return jsonify({"error": f"Invalid data format for time '{time}': Expected a dictionary"}), 400
         try:
             timeseries_manager.add_timeseries(time, values)
-            current_timeseries[time] = values 
+            current_timeseries[time] = values
         except ValueError as e:
             logger.error(f"Error adding timeseries for time '{time}': {e}")
             timeseries_manager.timeseries = current_timeseries  # Restore previous state
