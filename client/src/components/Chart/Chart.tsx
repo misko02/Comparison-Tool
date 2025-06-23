@@ -15,6 +15,9 @@ export const MyChart: React.FC<MyChartProps> = ({primaryData, secondaryData, tit
     const [customRange, setCustomRange] = useState(false);
     const [customYMin, setCustomYMin] = useState<string>('');
     const [customYMax, setCustomYMax] = useState<string>('');
+    const [customRange2, setCustomRange2] = useState(false);
+    const [customY2Min, setCustomY2Min] = useState<string>('');
+    const [customY2Max, setCustomY2Max] = useState<string>('');
     const [visibleMap, setVisibleMap] = useState<Record<string, boolean>>({});
     const allData = {...primaryData, ...(secondaryData || {})};
     useEffect(() => { // ten hook pozwala na dynamiczny zakres osi X od razu po załadowaniu danych, bez niego najpierw trzeba odświeżyć stronę
@@ -146,8 +149,8 @@ visible: (visibleMap[name] === false ? 'legendonly' : undefined) as 'legendonly'
                     yaxis2: {
                         title: {text: secondaryData? Object.keys(secondaryData)[0]?.split('.')[0] || 'Second Y-Axis':''} ,
                         overlaying: 'y',
-                        autorange: customRange ? false : true,
-                        range: customRange ? [parseFloat(customYMin), parseFloat(customYMax)] : undefined,
+                        autorange: customRange2 ? false : true,
+                        range: customRange2 ? [parseFloat(customY2Min), parseFloat(customY2Max)] : undefined,
                         showspikes: true,
                         spikemode: 'across',
                         spikedash: "solid",
@@ -207,6 +210,47 @@ visible: (visibleMap[name] === false ? 'legendonly' : undefined) as 'legendonly'
                 >
                     Reset
                 </button>
+                            {secondaryData && (
+                                <div style ={{marginTop: '20px'}}>
+                                            <label>
+                    Second Y Min:
+                    <input
+                        type="number"
+                        value={customY2Min}
+                        onChange={(e) => setCustomY2Min(e.target.value)}
+                        style={{margin: '0 10px', width: '40px'}}
+                    />
+                </label>
+                <label>
+                    Second Y Max:
+                    <input
+                        type="number"
+                        value={customY2Max}
+                        onChange={(e) => setCustomY2Max(e.target.value)}
+                        style={{margin: '0 10px', width: '40px'}}
+                    />
+                </label>
+                <button
+                    onClick={() => setCustomRange2(true)}
+                                className="button"
+
+                >
+                    Apply
+                </button>
+                <button
+                    className="button"
+
+                    onClick={() => {
+                        setCustomY2Min('');
+                        setCustomY2Max('');
+                        setCustomRange2(false);
+
+                    }}
+                >
+                    Reset
+                </button>
+                                </div>
+                            )}
             </div>
         </>
     );
