@@ -1,9 +1,8 @@
 .Chart-container {
-  width: 95%;
   margin-top: 20px;
   background-color: #f8f9fa;
   padding: 20px;
-  border-radius: 10px;
+  border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   display: block;
 }

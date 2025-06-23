@@ -1,5 +1,4 @@
 class TimeSeriesManager:
-
     """
     Service class to manage time series data.
 
@@ -11,7 +10,7 @@ class TimeSeriesManager:
     Returns:
         bool: True if added successfully, False otherwise
     """
-    
+
     def __init__(self):
         self.timeseries = {}
 
@@ -34,56 +33,61 @@ class TimeSeriesManager:
         """
         if isinstance(data, dict):
             self.timeseries[time] = data
-            for time, categories in data.items():
+            for timeserie, categories in data.items():
                 if not isinstance(categories, dict):
-                    raise ValueError(f"Invalid category '{time}': {categories}")
+                    raise ValueError(f"Invalid category '{timeserie}': {categories}")
                 for category, files in categories.items():
                     if not isinstance(files, (float, int)):
                         raise ValueError(f"Invalid file data for category '{category}': {files}")
             return True
         return False
-    
 
-        # if isinstance(data, list):
-        #     self.timeseries[key] = data
-        #     for timeserie in data:
-        #         if not isinstance(timeserie, dict):
-        #             raise ValueError(f"Invalid timeserie value: {timeserie}")
-        #         if not all(k in timeserie for k in ("log_date", "values", "id")):
-        #             raise ValueError(f"Missing keys in timeserie: {timeserie}")
-        #         try:
-        #             timeserie_model = TimeserieDTO.from_dict(timeserie)
-        #         except ValueError as e:
-        #             raise ValueError(f"Invalid timeserie data: {timeserie}") from e
-        #     return True
-        # return False
-
-    def get_timeseries(self, filename:str = None, category:str = None):
+    def get_timeseries(self, time:str = None, filename:str = None, category:str = None):
         """
         Retrieve timeseries data.
 
         Args:
+            time (str, optional): The time to filter timeseries by
             filename (str, optional): The filename to filter timeseries by
             category (str, optional): The category to filter timeseries by
         Returns:
             dict: Timeseries data for the specified time or all timeseries if no key is provided
         """
 
-        if filename and category:
-            timeserie = {}
-            if not self.timeseries:
-                raise ValueError("No timeseries data available")
-                
-            for time, timeseries in self.timeseries.items():
-                if isinstance(timeseries, dict) and category in timeseries and isinstance(timeseries.get(category), dict) and filename in timeseries[category]:
-                    timeserie[time] = timeseries[category][filename]
-            return timeserie
-        return self.timeseries
+        result = {}
+        if not self.timeseries:
+            return result
+        if time and not isinstance(time, str):
+            raise ValueError(f"Invalid time format: {time}. Expected a string.")
 
+        if filename and not isinstance(filename, str):
+            raise ValueError(f"Invalid filename format: {filename}. Expected a string.")
+
+        if category and not isinstance(category, str):
+            raise ValueError(f"Invalid category format: {category}. Expected a string.")
+
+        for timeseries, categories in self.timeseries.items():
+            if time and timeseries != time:
+                continue
+
+            for timeseries_category, timeseries_filenames in categories.items():
+                if category and timeseries_category != category:
+                    continue
+
+                for file, value in timeseries_filenames.items():
+                    if filename and file != filename:
+                        continue
+
+                    result.setdefault(timeseries, {}).setdefault(timeseries_category, {})[file] = value
+
+        return result
     def clear_timeseries(self):
-        
+
         """
         Clear all timeseries data.
         """
-        
-        self.timeseries.clear()
+        try:
+            self.timeseries.clear()
+            return {"message": "All timeseries data cleared successfully."}, 200
+        except Exception as e:
+            return {"error": str(e)}, 500
