@@ -7,7 +7,8 @@
     height: 100%;
     background-color: #f8f9fa;
     padding: 20px;
-    border-radius: 10px;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .Metrics-header {
@@ -24,7 +25,6 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    width: 95%;
     height: 100%;
 
 }

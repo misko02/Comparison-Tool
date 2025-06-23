@@ -13,7 +13,9 @@ const Dropdown: React.FC<DropdownProps> = ({ category, files, onFileClick }) => 
     <Accordion className="file-accordion">
       <Accordion.Item eventKey="0" >
         <Accordion.Header className="accordion-header">
-          {category}
+           <div className="accordion-header-content"> 
+            {category}
+          </div>
         </Accordion.Header>
         <Accordion.Body className="accordion-content" >
           <div className="accordion-layout" >
