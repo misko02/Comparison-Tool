@@ -42,6 +42,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
   const [tempGroupName, setTempGroupName] = useState<string>('');
   const [groupCounter, setGroupCounter] = useState(1); // Counter for default group names
   const [groupNameError, setGroupNameError] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
 
   const resetState = () => {
@@ -59,12 +60,11 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
     setTempGroupName('');
     setGroupCounter(1);
     setGroupNameError(null);
-
+    setValidationError(null);
   };
 
-  const loadFileForConfiguration = useCallback(async (fileIndex: number) => {
+    const loadFileForConfiguration = useCallback(async (fileIndex: number) => {
     if (!files || files.length === 0 || fileIndex >= files.length) return;
-
     setIsLoadingFile(true);
     setErrorParsingFile(null);
     const file = files[fileIndex];
@@ -83,29 +83,32 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
     try {
       const text = await file.text();
       const jsonData = JSON.parse(text);
-      const dataArray = Array.isArray(jsonData) ? jsonData : (typeof jsonData === 'object' && jsonData !== null ? [jsonData] : []);
+const dataArray = Array.isArray(jsonData) ? jsonData : (typeof jsonData === 'object' && jsonData !== null ? [jsonData] : []);
 
-      if (dataArray.length > 0) {
-        const firstEntry = dataArray[0];
-        if (typeof firstEntry === 'object' && firstEntry !== null) {
-          const columns = Object.keys(firstEntry);
-          setColumnOptions(columns);
+const flattenedDataArray = dataArray.map(entry => flattenObject(entry));
+    console.log(flattenedDataArray[0]);
 
-          const newConfig: FileConfig = {
-            logDateColumn: columns.find(c => c.toLowerCase().includes('date') || c.toLowerCase().includes('time')) || columns[0] || '',
-            valueColumn: columns.find(c => c.toLowerCase().includes('value') || c.toLowerCase().includes('metric')) || (columns.length > 1 ? columns[1] : columns[0]) || '',
-            rawData: dataArray,
-          };
-          setFileConfigs(prev => ({ ...prev, [fileKey]: newConfig }));
-        } else {
-          throw new Error(`First entry in file ${file.name} is not an object.`);
-        }
-      } else {
-        throw new Error(`File ${file.name} is empty or not an array of objects.`);
-      }
+if (flattenedDataArray.length > 0) {
+  const firstEntry = flattenedDataArray[0];
+  const columns = Object.keys(firstEntry);
+  setColumnOptions(columns);
+
+  const newConfig: FileConfig = {
+    logDateColumn: columns.find(c => c.toLowerCase().includes('date') || c.toLowerCase().includes('time')) || columns[0] || '',
+    valueColumn: columns.find(c => c.toLowerCase().includes('value') || c.toLowerCase().includes('metric')) || (columns.length > 1 ? columns[1] : columns[0]) || '',
+    rawData: flattenedDataArray,
+  };
+  setFileConfigs(prev => ({ ...prev, [fileKey]: newConfig }));
+} else {
+  throw new Error(`File ${file.name} is empty or not an array of objects.`);
+}
     } catch (e: any) {
       console.error(`Error processing file ${file.name}:`, e);
-      setErrorParsingFile(`Error parsing file ${file.name}: ${e.message}`);
+      let errorMessage = `Error parsing file ${file.name}: ${e.message}.`;
+      if (e.message.includes('Unexpected token')) {
+        errorMessage += ' Please check for common JSON errors like missing commas or brackets.';
+      }
+      setErrorParsingFile(errorMessage);
     } finally {
       setIsLoadingFile(false);
     }
@@ -120,17 +123,38 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
 
   useEffect(() => {
     if (show && files.length > 0 && currentStep === 'file-preview') {
-
+      setValidationError(null); // Clear validation errors when moving back to file preview
       setRenameError(null);
-      setEditingFileName(false); 
+      setEditingFileName(false);
       loadFileForConfiguration(currentFileIndex);
     }
   }, [show, files.length, currentFileIndex, currentStep, loadFileForConfiguration]);
 
+  const flattenObject = (obj: any, prefix = ''): Record<string, any> => {
+  let result: Record<string, any> = {};
+
+  for (const key in obj) {
+    if (!obj.hasOwnProperty(key)) continue;
+
+    const value = obj[key];
+    const prefixedKey = prefix ? `${prefix}.${key}` : key;
+
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      // Rekursywnie spłaszcz
+      const nested = flattenObject(value, prefixedKey);
+      result = { ...result, ...nested };
+    } else {
+      result[prefixedKey] = value;
+    }
+  }
+
+  return result;
+};
+
   const handleNextFilePreview = () => {
     if (currentFileIndex < files.length - 1) {
       setCurrentFileIndex(currentFileIndex + 1);
-      setEditingFileName(false); 
+      setEditingFileName(false);
     } else {
       setCurrentStep('column-config');
       const fileKeys = Object.keys(fileConfigs);
@@ -156,14 +180,14 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
       setCurrentStep('file-preview');
     } else if (currentFileIndex > 0) {
       setCurrentFileIndex(currentFileIndex - 1);
-      setEditingFileName(false); 
+      setEditingFileName(false);
     }
   };
 
   const addNewGroup = () => {
     const newGroupName = `Group${groupCounter}`;
     setGroupCounter(prev => prev + 1);
-    
+
     setGroups(prev => [
       ...prev,
       {
@@ -179,6 +203,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
   };
 
   const updateGroupMapping = (groupId: string, fileKey: string, column: string) => {
+    setValidationError(null);
     setGroups(groups.map(group =>
       group.id === groupId
         ? { ...group, fileMappings: { ...group.fileMappings, [fileKey]: column } }
@@ -200,7 +225,7 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
 
   const saveGroupName = (groupId: string) => {
     const trimmedName = tempGroupName.trim();
-    
+
     if (!trimmedName) {
       setGroupNameError('Group name cannot be empty');
       return;
@@ -263,23 +288,59 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
       })
     );
 
-    setRenamedFiles(prev => ({ 
-      ...prev, 
+    setRenamedFiles(prev => ({
+      ...prev,
       [originalKey]: newKey,
       ...Object.fromEntries(
         Object.entries(prev)
           .filter(([_, value]) => value !== originalKey)
       )
     }));
-    
+
     setEditingFileName(false);
   };
 
   const cancelEditingFileName = () => {
-  setEditingFileName(false);
-  setTempFileName('');
-  setRenameError(null);
-};
+    setEditingFileName(false);
+    setTempFileName('');
+    setRenameError(null);
+  };
+
+  const validateDataMappings = (): string | null => {
+    for (const group of groups) {
+      for (const fileKey in group.fileMappings) {
+        const columnName = group.fileMappings[fileKey];
+        if (!columnName || columnName === 'none') continue;
+
+        const config = fileConfigs[fileKey];
+        if (!config || config.rawData.length === 0) continue;
+
+        // Znajdź pierwszy wiersz w pliku, który ma jakąkolwiek wartość w danej kolumnie
+        const sampleRow = config.rawData.find(row => row[columnName] !== undefined && row[columnName] !== null);
+
+        // Jeśli nie znaleziono żadnego wiersza z danymi, przejdź dalej
+        if (!sampleRow) continue;
+
+        const value = sampleRow[columnName];
+
+        // Walidacja dla grupy 'Date'
+        if (group.id === 'date') {
+            const dateObj = new Date(value);
+            if (isNaN(dateObj.getTime())) {
+                return `Column '${columnName}' in file '${fileKey}' appears to contain an invalid date format (checked value: '${value}').`;
+            }
+
+        }
+        // Walidacja dla wszystkich innych grup (muszą być numeryczne)
+        else {
+            if (isNaN(parseFloat(value as any)) || !isFinite(value as any)) {
+                return `Column '${columnName}' in file '${fileKey}' for group '${group.name}' appears to contain a non-numeric value (checked value: '${value}').`;
+            }
+        }
+      }
+    }
+    return null; // Brak błędów
+  };
 
   const groupAndTransformData = () => {
     const result: Record<string, any> = {};
@@ -319,8 +380,11 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
             result[isoDateString][group.name] = {};
           }
 
-          // Add value for this file
-          result[isoDateString][group.name][fileKey] = row[column];
+          // Add value for this file, converting it to a number
+          const value = row[column]
+          if(!isNaN(parseFloat(value))){
+            result[isoDateString][group.name][fileKey] = parseFloat(row[column]);
+          }
         });
       });
     });
@@ -329,6 +393,8 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
   };
 
   const handleFinish = () => {
+    setValidationError(null);
+
     // Validate that all groups have names
     const unnamedGroups = groups.filter(group => !group.name.trim());
     if (unnamedGroups.length > 0) {
@@ -344,6 +410,11 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
       return;
     }
 
+    const mappingError = validateDataMappings();
+    if (mappingError) {
+      setValidationError(mappingError);
+      return; // Zatrzymaj, jeśli są błędy
+    }
     const groupedData = groupAndTransformData();
     onComplete(groupedData);
     onHide();
@@ -468,17 +539,17 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
                         <span>{group.name}</span>
                         {group.id !== 'date' && (
                           <>
-                            <Button 
-                              size="sm" 
-                              variant="outline-primary" 
+                            <Button
+                              size="sm"
+                              variant="outline-primary"
                               onClick={() => startEditingGroupName(group.id, group.name)}
                             >
                               Rename
                             </Button>
                             {group.id !== 'value' && (
-                              <Button 
-                                size="sm" 
-                                variant="outline-danger" 
+                              <Button
+                                size="sm"
+                                variant="outline-danger"
                                 onClick={() => removeGroup(group.id)}
                                 className="ms-2"
                               >
@@ -499,17 +570,17 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
                   const fileColumns = fileConfigs[fileKey].rawData.length > 0
                     ? Object.keys(fileConfigs[fileKey].rawData[0])
                     : [];
-                  
+
                   // Get all used columns for this file
                   const usedColumns = getUsedColumnsForFile(fileKey);
                   // Get current selection for this group and file
                   const currentSelection = group.fileMappings[fileKey] || 'none';
-                  
+
                   // Available columns are:
                   // 1. The currently selected column (if any)
                   // 2. All columns not used by other groups
                   // 3. "none" option
-                  const availableColumns = fileColumns.filter(col => 
+                  const availableColumns = fileColumns.filter(col =>
                     col === currentSelection || !usedColumns.includes(col)
                   );
 
@@ -540,26 +611,33 @@ export const DataImportPopup: React.FC<Props> = ({ show, files, onHide, onComple
       </Modal.Body>
 
       <Modal.Footer>
+        {/* NOWOŚĆ: Wyświetlanie błędu walidacji */}
+        {validationError && (
+          <div className="alert alert-danger w-100 text-center p-2" role="alert">
+            {validationError}
+          </div>
+        )}
 
-      {!(currentStep === 'file-preview' && currentFileIndex === 0) && (
-        <Button variant="secondary" onClick={handleBack}>
-          Back
+        {!(currentStep === 'file-preview' && currentFileIndex === 0) && (
+          <Button variant="secondary" onClick={handleBack}>
+            Back
+          </Button>
+        )}
+        <Button
+          variant="primary"
+          onClick={currentStep === 'file-preview' ? handleNextFilePreview : handleFinish}
+          disabled={
+            currentStep === 'file-preview'
+              ? isLoadingFile || !!errorParsingFile || !!renameError
+              // ZMIANA: Dodano blokadę przycisku w przypadku błędu walidacji
+              : !!validationError
+          }
+        >
+          {currentStep === 'file-preview'
+            ? currentFileIndex < files.length - 1 ? 'Next File' : 'Configure Columns'
+            : 'Finish & Process Data'}
         </Button>
-      )}
-      <Button
-        variant="primary"
-        onClick={currentStep === 'file-preview' ? handleNextFilePreview : handleFinish}
-        disabled={
-          currentStep === 'file-preview'
-            ? isLoadingFile || !!errorParsingFile || !!renameError
-            : false
-        }
-      >
-        {currentStep === 'file-preview'
-          ? currentFileIndex < files.length - 1 ? 'Next File' : 'Configure Columns'
-          : 'Finish & Process Data'}
-      </Button>
-    </Modal.Footer>
+      </Modal.Footer>
     </Modal>
   );
 };
